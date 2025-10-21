@@ -1,0 +1,13 @@
+[project]
+name = "x402-mvp"
+version = "0.1.0"
+description = "A example project using x402"
+requires-python = ">=3.13"
+dependencies = [
+    "dotenv>=0.9.9",
+    "flask>=3.1.2",
+    "x402",
+]
+
+[tool.uv.sources]
+x402 = { git = "https://github.com/coinbase/x402.git", subdirectory = "python/x402" }
