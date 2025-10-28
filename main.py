@@ -26,7 +26,6 @@ else:
     raise ValueError(f"Unsupported network: {NETWORK}")
 
 app = Flask(__name__)
-app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 if NETWORK == "base-sepolia":
     facilitator_config = FacilitatorConfig(
@@ -83,4 +82,4 @@ def orders():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8008, debug=True)
+    app.run(host="0.0.0.0", port=5000)
