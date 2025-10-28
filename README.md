@@ -7,8 +7,8 @@ This application uses the Coinbase facilitator. It supports USDC payments on the
 No Coinbase account needed.
 
 ```
-PAY_TO_ADDRESS=0xYourBaseWalletAddress  # Where USDC payments go
-BASE_RPC_URL=https://sepolia.base.org
+NETWORK=base-sepolia            # Base Sepolia testnet
+ADDRESS=0xYourBaseWalletAddress # Where USDC payments go
 ```
 
 ## Production environment
@@ -16,7 +16,8 @@ BASE_RPC_URL=https://sepolia.base.org
 You must register an account at the [Coinbase Developer Portal](https://portal.cdp.coinbase.com/) and get an API key.
 
 ```
-COINBASE_API_KEY=your_cdp_api_key_here  # From CDP console
-PAY_TO_ADDRESS=0xYourBaseWalletAddress  # Where USDC payments go
-BASE_RPC_URL=https://mainnet.base.org
+NETWORK=base                                # Base mainnet
+ADDRESS=0xYourBaseWalletAddress             # Where USDC payments go
+CDP_API_KEY_ID=YourCoinbaseAPIKeyID         # Get this from Coinbase Developer Portal
+CDP_API_KEY_SECRET=YourCoinbaseAPIKeySecret # Get this from Coinbase Developer Portal
 ```
