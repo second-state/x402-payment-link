@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A example project using x402"
 requires-python = ">=3.13"
 dependencies = [
+    "cdp-sdk>=1.33.1",
     "dotenv>=0.9.9",
     "flask>=3.1.2",
     "x402",
