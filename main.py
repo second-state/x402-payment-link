@@ -97,16 +97,26 @@ def buy_echokit():
 
 @app.route("/buy-echokit/order", methods=["POST"])
 def buy_echokit_order():
-    name = request.form.get("name")
-    email = request.form.get("email")
-    address = request.form.get("address")
     timestamp = time.time()
+    email = request.form.get("email")
+    phone = request.form.get("phone")
+    name = request.form.get("fullName")
+    address1 = request.form.get("address1")
+    address2 = request.form.get("address2")
+    state = request.form.get("state")
+    zip = request.form.get("zip")
+    country = request.form.get("country")
     order_id = generate_order_id()
     data = {
         "time": timestamp,
-        "name": name,
         "email": email,
-        "address": address,
+        "phone": phone,
+        "name": name,
+        "address1": address1,
+        "address2": address2,
+        "state": state,
+        "zip": zip,
+        "country": country,
         "order_id": order_id,
         "payment": False,
     }
@@ -118,7 +128,8 @@ def buy_echokit_order():
 @app.route("/buy-echokit/order/<order_id>")
 def buy_echokit_order_id(order_id):
     orders = get_orders()
-    order = next((order for order in orders if order.get("order_id") == order_id), None)
+    order = next((order for order in orders if order.get(
+        "order_id") == order_id), None)
     if order:
         order["time"] = time.time()
         order["payment"] = True

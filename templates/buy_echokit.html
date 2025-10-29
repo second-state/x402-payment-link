@@ -1,79 +1,600 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy EchoKit</title>
+    <title>Shipping Information</title>
     <style>
-        body {
-            font-family: system-ui, sans-serif;
-            max-width: 600px;
-            margin: 80px auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        p {
-            color: #666;
-            margin: 20px 0;
-        }
-        a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        form {
-            margin-top: 30px;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: 500;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f6f9fc;
+            color: #32325d;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-top: 40px;
+        }
+
+        .header {
+            padding: 40px 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #e6ebf1;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            font-size: 20px;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .product-description {
+            font-size: 15px;
+            color: #6b7c93;
+            margin-bottom: 20px;
+        }
+
+        .price {
+            font-size: 32px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .price-currency {
+            font-size: 20px;
+            color: #6b7c93;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #32325d;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            font-family: inherit;
+            background: white;
+        }
+
         input:focus {
             outline: none;
-            border-color: #0066cc;
+            border-color: #635bff;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
         }
-        button {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 4px;
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        .address-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 14px;
             font-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            font-family: inherit;
+            background: white;
             cursor: pointer;
         }
-        button:hover {
-            background: #0052a3;
+
+        select:focus {
+            outline: none;
+            border-color: #635bff;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
+
+        select.error {
+            border-color: #df1b41;
+        }
+
+        .error-message {
+            color: #df1b41;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        input.error {
+            border-color: #df1b41;
+        }
+
+        input.error:focus {
+            box-shadow: 0 0 0 3px rgba(223, 27, 65, 0.1);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: #635bff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-top: 10px;
+        }
+
+        .submit-button:hover {
+            background: #5145e4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(99, 91, 255, 0.3);
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+        }
+
+        .submit-button:disabled {
+            background: #aab7c4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .powered-by {
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            color: #6b7c93;
+        }
+
+        .stripe-logo {
+            display: inline-block;
+            font-weight: 600;
+            color: #635bff;
+        }
+
+        .secure-notice {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #6b7c93;
+            margin-top: 20px;
+        }
+
+        .lock-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 20px;
+            }
+
+            .header {
+                padding: 30px 30px 20px;
+            }
+
+            .form-container {
+                padding: 30px;
+            }
+
+            .product-name {
+                font-size: 20px;
+            }
+
+            .price {
+                font-size: 28px;
+            }
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: #00d924;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .success-text {
+            font-size: 15px;
+            color: #6b7c93;
         }
     </style>
 </head>
 <body>
-    <a href="/">← Back</a>
-    <h1>Buy EchoKit</h1>
-    <p>To purchase EchoKit, please fill out the form below.</p>
-    <form action="/buy-echokit/order" method="POST">
-        <label for="name">Name:</label>
-        <input type="name" id="name" name="name" required><br />
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br />
-        <label for="address">Address:</label>
-        <input type="text" id="address" name="address" required><br />
-        <button type="submit">Buy Now</button>
-    </form>
+    <div class="container">
+        <div class="header">
+            <div class="logo">S</div>
+            <div class="product-name">Shipping Information</div>
+            <div class="product-description">Please provide your shipping details to complete your order</div>
+            <div class="price">
+                <span class="price-currency">$</span>29.99
+                <span class="price-currency">/ month</span>
+            </div>
+        </div>
+
+        <div class="form-container" id="shippingForm">
+            <form id="checkoutForm" action="/buy-echokit/order" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        required
+                    >
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone number</label>
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        placeholder="+1 (555) 123-4567"
+                        required
+                    >
+                    <div class="error-message" id="phoneError">Please enter a valid phone number</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fullName">Full name</label>
+                    <input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        placeholder="John Smith"
+                        required
+                    >
+                    <div class="error-message" id="fullNameError">Please enter your full name</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address1">Address line 1</label>
+                    <input
+                        type="text"
+                        id="address1"
+                        name="address1"
+                        placeholder="123 Main Street"
+                        required
+                    >
+                    <div class="error-message" id="address1Error">Please enter your address</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address2">Address line 2 (optional)</label>
+                    <input
+                        type="text"
+                        id="address2"
+                        name="address2"
+                        placeholder="Apartment, suite, etc."
+                    >
+                </div>
+
+                <div class="form-group address-grid">
+                    <div>
+                        <label for="city">City</label>
+                        <input
+                            type="text"
+                            id="city"
+                            name="city"
+                            placeholder="San Francisco"
+                            required
+                        >
+                        <div class="error-message" id="cityError">Required</div>
+                    </div>
+
+                    <div>
+                        <label for="state">State / Province</label>
+                        <input
+                            type="text"
+                            id="state"
+                            name="state"
+                            placeholder="CA"
+                            required
+                        >
+                        <div class="error-message" id="stateError">Required</div>
+                    </div>
+
+                    <div>
+                        <label for="zip">ZIP / Postal code</label>
+                        <input
+                            type="text"
+                            id="zip"
+                            name="zip"
+                            placeholder="94102"
+                            required
+                        >
+                        <div class="error-message" id="zipError">Required</div>
+                    </div>
+
+                    <div>
+                        <label for="country">Country</label>
+                        <select id="country" name="country" required>
+                            <option value="">Select country</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="AU">Australia</option>
+                            <option value="DE">Germany</option>
+                            <option value="FR">France</option>
+                            <option value="IT">Italy</option>
+                            <option value="ES">Spain</option>
+                            <option value="MX">Mexico</option>
+                            <option value="BR">Brazil</option>
+                            <option value="JP">Japan</option>
+                            <option value="CN">China</option>
+                            <option value="IN">India</option>
+                        </select>
+                        <div class="error-message" id="countryError">Required</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-button" id="submitButton">
+                    Continue
+                </button>
+
+                <div class="secure-notice">
+                    <svg class="lock-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Secure checkout powered by Stripe
+                </div>
+            </form>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✓</div>
+            <div class="success-title">Information Submitted!</div>
+            <div class="success-text">Your shipping information has been saved successfully.</div>
+        </div>
+    </div>
+
+    <div class="powered-by">
+        Powered by <span class="stripe-logo">stripe</span>
+    </div>
+
+    <script>
+        // Get form elements
+        const form = document.getElementById('checkoutForm');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const fullNameInput = document.getElementById('fullName');
+        const address1Input = document.getElementById('address1');
+        const cityInput = document.getElementById('city');
+        const stateInput = document.getElementById('state');
+        const zipInput = document.getElementById('zip');
+        const countryInput = document.getElementById('country');
+        const submitButton = document.getElementById('submitButton');
+        const shippingForm = document.getElementById('shippingForm');
+        const successMessage = document.getElementById('successMessage');
+
+        // Format phone number
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            let formatted = value;
+
+            if (value.length > 0) {
+                if (value.length <= 3) {
+                    formatted = value;
+                } else if (value.length <= 6) {
+                    formatted = '(' + value.slice(0, 3) + ') ' + value.slice(3);
+                } else {
+                    formatted = '(' + value.slice(0, 3) + ') ' + value.slice(3, 6) + '-' + value.slice(6, 10);
+                }
+            }
+
+            e.target.value = formatted;
+
+            if (value.length > 0) {
+                clearError('phone');
+            }
+        });
+
+        // Clear errors on input
+        emailInput.addEventListener('input', () => clearError('email'));
+        fullNameInput.addEventListener('input', () => clearError('fullName'));
+        address1Input.addEventListener('input', () => clearError('address1'));
+        cityInput.addEventListener('input', () => clearError('city'));
+        stateInput.addEventListener('input', () => clearError('state'));
+        zipInput.addEventListener('input', () => clearError('zip'));
+        countryInput.addEventListener('change', () => clearError('country'));
+
+        // Validation functions
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePhone(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            return cleaned.length >= 10;
+        }
+
+        function validateRequired(value) {
+            return value.trim().length > 0;
+        }
+
+        function validateZip(zip) {
+            // Basic validation - at least 3 characters
+            return zip.trim().length >= 3;
+        }
+
+        function showError(fieldName) {
+            const input = document.getElementById(fieldName);
+            const error = document.getElementById(fieldName + 'Error');
+            input.classList.add('error');
+            error.classList.add('show');
+        }
+
+        function clearError(fieldName) {
+            const input = document.getElementById(fieldName);
+            const error = document.getElementById(fieldName + 'Error');
+            input.classList.remove('error');
+            error.classList.remove('show');
+        }
+
+        function clearAllErrors() {
+            const errorFields = ['email', 'phone', 'fullName', 'address1', 'city', 'state', 'zip', 'country'];
+            errorFields.forEach(field => clearError(field));
+        }
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            clearAllErrors();
+
+            let isValid = true;
+
+            // Validate email
+            if (!validateEmail(emailInput.value)) {
+                showError('email');
+                isValid = false;
+            }
+
+            // Validate phone
+            if (!validatePhone(phoneInput.value)) {
+                showError('phone');
+                isValid = false;
+            }
+
+            // Validate full name
+            if (!validateRequired(fullNameInput.value) || fullNameInput.value.trim().length < 2) {
+                showError('fullName');
+                isValid = false;
+            }
+
+            // Validate address1
+            if (!validateRequired(address1Input.value)) {
+                showError('address1');
+                isValid = false;
+            }
+
+            // Validate city
+            if (!validateRequired(cityInput.value)) {
+                showError('city');
+                isValid = false;
+            }
+
+            // Validate state
+            if (!validateRequired(stateInput.value)) {
+                showError('state');
+                isValid = false;
+            }
+
+            // Validate zip
+            if (!validateZip(zipInput.value)) {
+                showError('zip');
+                isValid = false;
+            }
+
+            // Validate country
+            if (!validateRequired(countryInput.value)) {
+                showError('country');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            } else {
+                // Simulate form submission
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+            }
+        });
+
+        // Add subtle animation on load
+        window.addEventListener('load', function() {
+            document.querySelector('.container').style.opacity = '0';
+            document.querySelector('.container').style.transform = 'translateY(20px)';
+            document.querySelector('.container').style.transition = 'all 0.3s ease';
+
+            setTimeout(() => {
+                document.querySelector('.container').style.opacity = '1';
+                document.querySelector('.container').style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
 </body>
 </html>
