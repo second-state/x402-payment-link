@@ -53,7 +53,7 @@ elif NETWORK == "base":
 payment_middleware = PaymentMiddleware(app)
 payment_middleware.add(
     path="/buy-echokit/order/*",
-    price="$0.001",
+    price="$0.1",
     pay_to_address=ADDRESS,
     network=NETWORK,
     paywall_config=PaywallConfig(
@@ -183,4 +183,4 @@ def orders():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(port=5000)
