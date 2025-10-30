@@ -6,11 +6,13 @@ import time
 
 from cdp.x402 import create_facilitator_config
 from dotenv import load_dotenv
-from flask import Flask, render_template, redirect, request, send_from_directory
+from flask import (Flask, redirect, render_template, request,
+                   send_from_directory)
+from flask_mail import Mail, Message
+from werkzeug.middleware.proxy_fix import ProxyFix
 from x402.facilitator import FacilitatorConfig
 from x402.flask.middleware import PaymentMiddleware
 from x402.types import PaywallConfig
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Load environment variables
 load_dotenv()
@@ -30,6 +32,16 @@ else:
     raise ValueError(f"Unsupported network: {NETWORK}")
 
 app = Flask(__name__)
+app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", "587"))
+app.config["MAIL_USE_TLS"] = os.getenv(
+    "MAIL_USE_TLS", "true").lower() == "true"
+app.config["MAIL_USE_SSL"] = os.getenv(
+    "MAIL_USE_SSL", "false").lower() == "true"
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
+mail = Mail(app)
 
 if NETWORK == "base-sepolia":
     facilitator_config = FacilitatorConfig(
@@ -135,6 +147,31 @@ def buy_echokit_order_id(order_id):
         order["payment"] = True
         with open("orders.txt", "a") as f:
             f.write(f"{json.dumps(order)}\n")
+
+        # Send order confirmation email
+        if order.get("email"):
+            try:
+                email_html = render_template(
+                    "order_confirmation_email.html",
+                    order_id=order_id,
+                    name=order.get("name", "Customer"),
+                    email=order.get("email"),
+                    phone=order.get("phone"),
+                    address1=order.get("address1"),
+                    address2=order.get("address2"),
+                    state=order.get("state"),
+                    zip=order.get("zip"),
+                    country=order.get("country")
+                )
+                msg = Message(
+                    subject=f'Order Confirmation - {order_id}',
+                    recipients=[order.get("email")],
+                    html=email_html
+                )
+                mail.send(msg)
+            except Exception as e:
+                app.logger.error(f"Failed to send email: {e}")
+
     return render_template("order_confirmation.html", order_id=order_id)
 
 

@@ -21,3 +21,17 @@ ADDRESS=0xYourBaseWalletAddress             # Where USDC payments go
 CDP_API_KEY_ID=YourCoinbaseAPIKeyID         # Get this from Coinbase Developer Portal
 CDP_API_KEY_SECRET=YourCoinbaseAPIKeySecret # Get this from Coinbase Developer Portal
 ```
+
+## Email settings
+
+To send email notifications, you need to set up SMTP settings in the `.env` file.
+
+```
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USE_SSL=False
+MAIL_USERNAME=<your_email_username>
+MAIL_PASSWORD=<your_email_password>
+MAIL_DEFAULT_SENDER=<your_default_sender_email>
+```
