@@ -24,6 +24,40 @@ NETWORK = os.getenv("NETWORK", "base-sepolia")
 ADDRESS = os.getenv("ADDRESS")
 CDP_API_KEY_ID = os.getenv("CDP_API_KEY_ID")
 CDP_API_KEY_SECRET = os.getenv("CDP_API_KEY_SECRET")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "staging")
+
+# Product pricing configuration
+PRODUCT_CATALOG = {
+    "echokit_diy": {
+        "name": "EchoKit DIY",
+        "description": "EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience.",
+        "staging": {
+            "price": 0.10,  # Product price in dollars
+            "shipping": 0.00,  # Shipping cost in dollars
+        },
+        "production": {
+            "price": 49.00,  # Product price in dollars
+            "shipping": 4.99,  # Shipping cost in dollars
+        }
+    }
+}
+
+def get_product_config(product_id):
+    """Get product configuration based on current environment"""
+    if product_id not in PRODUCT_CATALOG:
+        return None
+
+    product = PRODUCT_CATALOG[product_id]
+    env_config = product.get(ENVIRONMENT, product.get("production"))
+
+    return {
+        "name": product["name"],
+        "description": product["description"],
+        "price": env_config["price"],
+        "shipping": env_config["shipping"],
+        "total": env_config["price"] + env_config["shipping"],
+        "environment": ENVIRONMENT
+    }
 
 if NETWORK == "base-sepolia":
     if not ADDRESS:
@@ -54,9 +88,13 @@ elif NETWORK == "base":
         CDP_API_KEY_ID, CDP_API_KEY_SECRET)
 
 payment_middleware = PaymentMiddleware(app)
+
+# Get product configuration for payment middleware
+echokit_config = get_product_config("echokit_diy")
+
 payment_middleware.add(
     path="/echokit_diy/order/*",
-    price="$0.1",
+    price=f"${echokit_config['total']:.2f}",
     pay_to_address=ADDRESS,
     network=NETWORK,
     paywall_config=PaywallConfig(
@@ -97,7 +135,8 @@ def add_security_headers(response):
 
 @app.route("/")
 def index():
-    return render_template("index.html", network=NETWORK)
+    product_config = get_product_config("echokit_diy")
+    return render_template("index.html", network=NETWORK, product=product_config)
 
 
 @app.route('/static/<path:filename>')
@@ -107,7 +146,8 @@ def serve_static(filename):
 
 @app.route("/echokit_diy")
 def echokit_diy():
-    return render_template("echokit_diy.html")
+    product_config = get_product_config("echokit_diy")
+    return render_template("echokit_diy.html", product=product_config)
 
 
 @app.route("/echokit_diy/order", methods=["POST"])
