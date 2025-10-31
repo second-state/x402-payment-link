@@ -54,7 +54,7 @@ elif NETWORK == "base":
 
 payment_middleware = PaymentMiddleware(app)
 payment_middleware.add(
-    path="/buy-echokit/order/*",
+    path="/echokit_diy/order/*",
     price="$0.1",
     pay_to_address=ADDRESS,
     network=NETWORK,
@@ -104,12 +104,12 @@ def serve_static(filename):
     return send_from_directory('static', filename)
 
 
-@app.route("/buy-echokit")
+@app.route("/echokit_diy")
 def echokit_diy():
     return render_template("echokit_diy.html")
 
 
-@app.route("/buy-echokit/order", methods=["POST"])
+@app.route("/echokit_diy/order", methods=["POST"])
 def echokit_diy_order():
     timestamp = time.time()
     email = request.form.get("email")
@@ -136,10 +136,10 @@ def echokit_diy_order():
     }
     with open(ORDER_FILE_PATH, "a") as f:
         f.write(f"{json.dumps(data)}\n")
-    return redirect(f"/buy-echokit/order/{order_id}")
+    return redirect(f"/echokit_diy/order/{order_id}")
 
 
-@app.route("/buy-echokit/order/<order_id>")
+@app.route("/echokit_diy/order/<order_id>")
 def echokit_diy_order_id(order_id):
     orders = get_orders()
     order = next((order for order in orders if order.get(
