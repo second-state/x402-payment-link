@@ -34,6 +34,27 @@
                                 We've received your order and payment has been verified successfully! Your EchoKit device will be shipped to the address below.
                             </p>
 
+                            <!-- Order Summary -->
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 25px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
+                                <tr>
+                                    <td colspan="2" style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0;">
+                                        <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Order Summary</h3>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #666; font-size: 14px; width: 60%;">{{ product.name }}</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500; text-align: right;">${{ "%.2f"|format(product.price) }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #666; font-size: 14px; background-color: #ffffff;">Shipping</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500; background-color: #ffffff; text-align: right;">${{ "%.2f"|format(product.shipping) }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 600; border-top: 2px solid #e0e0e0;">Total</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 16px; font-weight: 600; border-top: 2px solid #e0e0e0; text-align: right;">${{ "%.2f"|format(product.total) }}</td>
+                                </tr>
+                            </table>
+
                             <!-- Order Details -->
                             <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 30px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
                                 <tr>
