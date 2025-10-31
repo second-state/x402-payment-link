@@ -34,4 +34,5 @@ MAIL_USE_SSL=False
 MAIL_USERNAME=<your_email_username>
 MAIL_PASSWORD=<your_email_password>
 MAIL_DEFAULT_SENDER=<your_default_sender_email>
+ORDER_CONFIRMATION_RECIPIENT=<recipient_email_for_order_confirmations>
 ```
