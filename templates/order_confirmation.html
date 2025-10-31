@@ -25,6 +25,21 @@
         a:hover {
             text-decoration: underline;
         }
+        .btn {
+            display: inline-block;
+            margin: 10px 20px 10px 0;
+            padding: 12px 24px;
+            text-decoration: none;
+            border: 2px solid #333;
+            border-radius: 6px;
+            color: #333;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+        }
         .success {
             background: #e8f5e9;
             padding: 15px;
@@ -40,5 +55,9 @@
     <p>Order ID: {{ order_id }}</p>
     <p>Thank you for your order!</p>
     <div class="success"><strong>✓ Payment Verified</strong></div>
+    <div style="margin-top: 30px;">
+        <a href="/" class="btn">Continue shopping</a>
+        <a href="https://echokit.dev/" class="btn">Getting started</a>
+    </div>
 </body>
 </html>
