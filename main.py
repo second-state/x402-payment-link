@@ -222,12 +222,5 @@ def echokit_diy_order_id(order_id):
     return render_template("order_confirmation.html", order_id=order_id)
 
 
-@app.route("/orders")
-def orders():
-    orders = get_orders()
-    orders = [order for order in orders if order.get("payment")]
-    return {"data": orders}
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=APP_PORT)
