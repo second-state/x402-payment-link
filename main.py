@@ -197,6 +197,9 @@ def echokit_diy_order_id(order_id):
             "ORDER_CONFIRMATION_RECIPIENT")
         if order.get("email") and order_confirmation_recipient:
             try:
+                # Get product configuration for email
+                product_config = get_product_config("echokit_diy")
+
                 email_html = render_template(
                     "order_confirmation_email.html",
                     order_id=order_id,
@@ -207,7 +210,8 @@ def echokit_diy_order_id(order_id):
                     address2=order.get("address2"),
                     state=order.get("state"),
                     zip=order.get("zip"),
-                    country=order.get("country")
+                    country=order.get("country"),
+                    product=product_config
                 )
                 msg = Message(
                     subject=f'Order Confirmation - {order_id}',
