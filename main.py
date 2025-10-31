@@ -14,6 +14,8 @@ from x402.facilitator import FacilitatorConfig
 from x402.flask.middleware import PaymentMiddleware
 from x402.types import PaywallConfig
 
+ORDER_FILE_PATH = "data/orders.txt"
+
 # Load environment variables
 load_dotenv()
 
@@ -77,11 +79,11 @@ def generate_order_id(length=12):
 
 def get_orders():
     try:
-        with open("orders.txt", "r") as f:
+        with open(ORDER_FILE_PATH, "r") as f:
             orders = [json.loads(line) for line in f.readlines()]
     except FileNotFoundError:
         # Create a new file if not exists
-        with open("orders.txt", "w") as f:
+        with open(ORDER_FILE_PATH, "w") as f:
             pass
     return orders
 
@@ -132,7 +134,7 @@ def buy_echokit_order():
         "order_id": order_id,
         "payment": False,
     }
-    with open("orders.txt", "a") as f:
+    with open(ORDER_FILE_PATH, "a") as f:
         f.write(f"{json.dumps(data)}\n")
     return redirect(f"/buy-echokit/order/{order_id}")
 
@@ -145,7 +147,7 @@ def buy_echokit_order_id(order_id):
     if order:
         order["time"] = time.time()
         order["payment"] = True
-        with open("orders.txt", "a") as f:
+        with open(ORDER_FILE_PATH, "a") as f:
             f.write(f"{json.dumps(order)}\n")
 
         # Send order confirmation email

@@ -1,0 +1,8 @@
+services:
+  x402-mvp:
+    container_name: x402-mvp
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./.env:/app/.env
+      - ./data:/app/data
