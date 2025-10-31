@@ -152,7 +152,7 @@ def serve_static(filename):
 @app.route("/<product>")
 def product_page(product):
     product_config = get_product_config(product)
-    return render_template(f"{product}.html", product=product_config)
+    return render_template(f"product.html", product=product_config)
 
 
 @app.route("/<product>/order", methods=["POST"])
