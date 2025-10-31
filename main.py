@@ -4,11 +4,12 @@ import secrets
 import string
 import time
 
+import sendgrid
 from cdp.x402 import create_facilitator_config
 from dotenv import load_dotenv
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory)
-from flask_mail import Mail, Message
+from sendgrid.helpers.mail import Cc, Email, Mail, To
 from werkzeug.middleware.proxy_fix import ProxyFix
 from x402.facilitator import FacilitatorConfig
 from x402.flask.middleware import PaymentMiddleware
@@ -42,6 +43,7 @@ PRODUCT_CATALOG = {
     }
 }
 
+
 def get_product_config(product_id):
     """Get product configuration based on current environment"""
     if product_id not in PRODUCT_CATALOG:
@@ -58,6 +60,7 @@ def get_product_config(product_id):
         "total": env_config["price"] + env_config["shipping"],
         "environment": ENVIRONMENT
     }
+
 
 if NETWORK == "base-sepolia":
     if not ADDRESS:
@@ -199,8 +202,13 @@ def echokit_diy_order_id(order_id):
             try:
                 # Get product configuration for email
                 product_config = get_product_config("echokit_diy")
-
-                email_html = render_template(
+                sendgrid_client = sendgrid.SendGridAPIClient(
+                    api_key=os.getenv('SENDGRID_API_KEY'))
+                from_email = Email("vivian@secondstate.io")
+                to_email = To(order.get("email"))
+                cc_email = Cc(order_confirmation_recipient)
+                subject = f"Order Confirmation - {order_id}"
+                html_content = render_template(
                     "order_confirmation_email.html",
                     order_id=order_id,
                     name=order.get("name", "Customer"),
@@ -213,13 +221,10 @@ def echokit_diy_order_id(order_id):
                     country=order.get("country"),
                     product=product_config
                 )
-                msg = Message(
-                    subject=f'Order Confirmation - {order_id}',
-                    recipients=[order.get("email")],
-                    cc=[order_confirmation_recipient],
-                    html=email_html
-                )
-                mail.send(msg)
+                mail = Mail(from_email, to_email,
+                            subject, html_content=html_content)
+                mail.cc = cc_email
+                sendgrid_client.send(mail)
             except Exception as e:
                 app.logger.error(f"Failed to send email: {e}")
 
