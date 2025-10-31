@@ -106,12 +106,12 @@ def serve_static(filename):
 
 
 @app.route("/buy-echokit")
-def buy_echokit():
-    return render_template("buy_echokit.html")
+def echokit_diy():
+    return render_template("echokit_diy.html")
 
 
 @app.route("/buy-echokit/order", methods=["POST"])
-def buy_echokit_order():
+def echokit_diy_order():
     timestamp = time.time()
     email = request.form.get("email")
     phone = request.form.get("phone")
@@ -141,7 +141,7 @@ def buy_echokit_order():
 
 
 @app.route("/buy-echokit/order/<order_id>")
-def buy_echokit_order_id(order_id):
+def echokit_diy_order_id(order_id):
     orders = get_orders()
     order = next((order for order in orders if order.get(
         "order_id") == order_id), None)
