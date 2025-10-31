@@ -152,7 +152,8 @@ def buy_echokit_order_id(order_id):
 
         # Send order confirmation email
         load_dotenv()
-        order_confirmation_recipient = os.getenv("ORDER_CONFIRMATION_RECIPIENT")
+        order_confirmation_recipient = os.getenv(
+            "ORDER_CONFIRMATION_RECIPIENT")
         if order.get("email") and order_confirmation_recipient:
             try:
                 email_html = render_template(
@@ -169,7 +170,8 @@ def buy_echokit_order_id(order_id):
                 )
                 msg = Message(
                     subject=f'Order Confirmation - {order_id}',
-                    recipients=[order.get("email"), order_confirmation_recipient],
+                    recipients=[order.get("email")],
+                    cc=[order_confirmation_recipient],
                     html=email_html
                 )
                 mail.send(msg)
