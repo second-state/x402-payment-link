@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase EchoKit DIY</title>
+    <title>Purchase {{ product.name }}</title>
     <style>
         * {
             margin: 0;
@@ -437,7 +437,7 @@
                 </label>
             </div>
 
-            <form id="checkoutForm" action="/echokit_diy/order" method="POST" novalidate>
+            <form id="checkoutForm" action="/{{ product.id }}/order" method="POST" novalidate>
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input

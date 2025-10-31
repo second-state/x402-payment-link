@@ -47,6 +47,7 @@ def get_product_config(product_id):
     env_config = product.get(ENVIRONMENT, product.get("production"))
 
     return {
+        "id": product_id,
         "name": product["name"],
         "description": product["description"],
         "image": product["image"],
