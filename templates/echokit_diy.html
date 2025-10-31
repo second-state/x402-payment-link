@@ -290,15 +290,19 @@
         }
 
         .product-image {
-            width: 80px;
-            height: 80px;
+            width: 120px;
+            height: 120px;
             background: #f0f0f0;
             border-radius: 8px;
             flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .product-details {
@@ -397,7 +401,9 @@
     <div class="container">
         <div class="header">
             <div class="product-info">
-                <div class="product-image">🎙️</div>
+                <div class="product-image">
+                    <img src="https://echokit.dev/media/echokit-diy-03.png" alt="EchoKit DIY">
+                </div>
                 <div class="product-details">
                     <div class="product-title">EchoKit DIY</div>
                     <div class="product-desc">EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience.</div>
@@ -427,7 +433,7 @@
                 <input type="checkbox" id="unicefDonation" name="unicefDonation">
                 <label for="unicefDonation" class="checkbox-label">
                     <span class="unicef-icon">💙</span>
-                    <span>Donate to UNICEF (no shipping needed)</span>
+                    <span>Donate to UNICEF (we'll ship to UNICEF for you)</span>
                 </label>
             </div>
 
@@ -552,7 +558,7 @@
                 </div>
 
                 <button type="submit" class="submit-button" id="submitButton">
-                    Pay Now
+                    Pay $53.99
                 </button>
 
                 <div class="secure-notice">
@@ -590,13 +596,16 @@
         const shippingCost = document.getElementById('shippingCost');
         const totalCost = document.getElementById('totalCost');
 
+        // Track current total for button
+        let currentTotal = 53.99;
+
         // Handle UNICEF donation checkbox
         unicefCheckbox.addEventListener('change', function() {
             if (this.checked) {
                 addressFields.classList.add('hidden');
-                // Update costs
-                shippingCost.textContent = '$0.00';
-                totalCost.textContent = '$49.00';
+                // Shipping cost stays the same (shipping to UNICEF)
+                // No cost changes needed
+                currentTotal = 53.99;
                 // Clear address field requirements
                 phoneInput.removeAttribute('required');
                 fullNameInput.removeAttribute('required');
@@ -609,9 +618,7 @@
                 clearAllErrors();
             } else {
                 addressFields.classList.remove('hidden');
-                // Restore costs
-                shippingCost.textContent = '$4.99';
-                totalCost.textContent = '$53.99';
+                currentTotal = 53.99;
                 // Restore address field requirements
                 phoneInput.setAttribute('required', 'required');
                 fullNameInput.setAttribute('required', 'required');
@@ -621,6 +628,8 @@
                 zipInput.setAttribute('required', 'required');
                 countryInput.setAttribute('required', 'required');
             }
+            // Update button text with current total
+            submitButton.textContent = `Pay ${currentTotal.toFixed(2)}`;
         });
 
         // Format phone number
