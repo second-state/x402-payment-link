@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipping Information</title>
+    <title>Purchase EchoKit DIY</title>
     <style>
         * {
             margin: 0;
@@ -35,7 +35,7 @@
 
         .header {
             padding: 40px 40px 30px;
-            text-align: center;
+            text-align: left;
             border-bottom: 1px solid #e6ebf1;
         }
 
@@ -273,21 +273,103 @@
             font-size: 15px;
             color: #6b7c93;
         }
+
+        .product-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .product-details {
+            flex: 1;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .product-desc {
+            font-size: 13px;
+            color: #6b7c93;
+            line-height: 1.5;
+        }
+
+        .price-breakdown {
+            background: #f6f9fc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #32325d;
+        }
+
+        .price-row:last-child {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 1px solid #e6ebf1;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">S</div>
-            <div class="product-name">Shipping Information</div>
-            <div class="product-description">Please provide your shipping details to complete your order</div>
-            <div class="price">
-                <span class="price-currency">$</span>29.99
-                <span class="price-currency">/ month</span>
+            <div class="product-info">
+                <div class="product-image">🎙️</div>
+                <div class="product-details">
+                    <div class="product-title">EchoKit DIY</div>
+                    <div class="product-desc">EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience.</div>
+                </div>
+            </div>
+
+            <div class="price-breakdown">
+                <div class="price-row">
+                    <span>EchoKit DIY</span>
+                    <span>$49.00</span>
+                </div>
+                <div class="price-row">
+                    <span>Shipping</span>
+                    <span>$4.99</span>
+                </div>
+                <div class="price-row">
+                    <span>Total</span>
+                    <span>$53.99</span>
+                </div>
             </div>
         </div>
 
         <div class="form-container" id="shippingForm">
+            <div class="section-title">Shipping Information</div>
             <form id="checkoutForm" action="/buy-echokit/order" method="POST" novalidate>
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -407,7 +489,7 @@
                 </div>
 
                 <button type="submit" class="submit-button" id="submitButton">
-                    Continue
+                    Pay Now
                 </button>
 
                 <div class="secure-notice">
