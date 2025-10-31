@@ -19,7 +19,7 @@ ORDER_FILE_PATH = "data/orders.txt"
 # Load environment variables
 load_dotenv()
 
-SERVER_PORT = int(os.getenv("SERVER_PORT", "5000"))
+APP_PORT = int(os.getenv("APP_PORT", "5000"))
 NETWORK = os.getenv("NETWORK", "base-sepolia")
 ADDRESS = os.getenv("ADDRESS")
 CDP_API_KEY_ID = os.getenv("CDP_API_KEY_ID")
@@ -190,4 +190,4 @@ def orders():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=SERVER_PORT)
+    app.run(host="0.0.0.0", port=APP_PORT)
