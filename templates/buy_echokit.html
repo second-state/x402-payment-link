@@ -24,19 +24,23 @@
         }
 
         .container {
-            max-width: 500px;
+            max-width: 1000px;
             width: 100%;
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
             overflow: hidden;
             margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
         }
 
         .header {
-            padding: 40px 40px 30px;
+            padding: 40px;
             text-align: left;
-            border-bottom: 1px solid #e6ebf1;
+            border-right: 1px solid #e6ebf1;
+            display: flex;
+            flex-direction: column;
         }
 
         .logo {
@@ -217,13 +221,16 @@
             height: 14px;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .container {
                 margin-top: 20px;
+                grid-template-columns: 1fr;
             }
 
             .header {
-                padding: 30px 30px 20px;
+                padding: 30px;
+                border-right: none;
+                border-bottom: 1px solid #e6ebf1;
             }
 
             .form-container {
@@ -243,6 +250,7 @@
             display: none;
             text-align: center;
             padding: 40px;
+            grid-column: 1 / -1;
         }
 
         .success-message.show {
