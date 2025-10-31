@@ -4,7 +4,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "${SERVER_PORT}:${APP_PORT}"
     volumes:
       - ./.env:/app/.env
       - ./data:/app/data
