@@ -49,6 +49,7 @@ def get_product_config(product_id):
     return {
         "name": product["name"],
         "description": product["description"],
+        "image": product["image"],
         "price": env_config["price"],
         "shipping": env_config["shipping"],
         "total": env_config["price"] + env_config["shipping"],

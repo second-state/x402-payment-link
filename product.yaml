@@ -1,6 +1,7 @@
 echokit_diy:
   name: EchoKey DIY
   description: "EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience."
+  image: https://echokit.dev/media/echokit-diy-03.png
   staging:
     price: 0.1
     shipping: 0
@@ -11,6 +12,7 @@ echokit_diy:
 demo:
   name: Demo Title
   description: "Demo description."
+  image: https://www.x402.org/_next/image?url=%2Fx402-logo.png&w=640&q=75
   staging:
     price: 0.1
     shipping: 0
