@@ -5,6 +5,7 @@ import string
 import time
 
 import sendgrid
+import yaml
 from cdp.x402 import create_facilitator_config
 from dotenv import load_dotenv
 from flask import (Flask, redirect, render_template, request,
@@ -27,29 +28,15 @@ CDP_API_KEY_ID = os.getenv("CDP_API_KEY_ID")
 CDP_API_KEY_SECRET = os.getenv("CDP_API_KEY_SECRET")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "staging")
 
-# Product pricing configuration
-PRODUCT_CATALOG = {
-    "echokit_diy": {
-        "name": "EchoKit DIY",
-        "description": "EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience.",
-        "staging": {
-            "price": 0.10,  # Product price in dollars
-            "shipping": 0.00,  # Shipping cost in dollars
-        },
-        "production": {
-            "price": 49.00,  # Product price in dollars
-            "shipping": 4.99,  # Shipping cost in dollars
-        }
-    }
-}
-
 
 def get_product_config(product_id):
     """Get product configuration based on current environment"""
-    if product_id not in PRODUCT_CATALOG:
+    with open('product.yaml', 'r') as f:
+        product_catalog = yaml.safe_load(f)
+    if product_id not in product_catalog:
         return None
 
-    product = PRODUCT_CATALOG[product_id]
+    product = product_catalog[product_id]
     env_config = product.get(ENVIRONMENT, product.get("production"))
 
     return {
