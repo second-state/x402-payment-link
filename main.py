@@ -31,14 +31,14 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "staging")
 
 def get_products():
     """Get all products from product.yaml"""
-    with open('product.yaml', 'r') as f:
+    with open('products.yaml', 'r') as f:
         product_catalog = yaml.safe_load(f)
     return product_catalog.keys()
 
 
 def get_product_config(product_id):
     """Get product configuration based on current environment"""
-    with open('product.yaml', 'r') as f:
+    with open('products.yaml', 'r') as f:
         product_catalog = yaml.safe_load(f)
     if product_id not in product_catalog:
         return None
@@ -51,6 +51,10 @@ def get_product_config(product_id):
         "name": product["name"],
         "description": product["description"],
         "image": product["image"],
+        "next_1_text": product["next_1_text"],
+        "next_1_url" : product["next_1_url"],
+        "next_2_text": product["next_2_text"],
+        "next_2_url" : product["next_2_url"],
         "price": env_config["price"],
         "shipping": env_config["shipping"],
         "total": env_config["price"] + env_config["shipping"],
@@ -150,12 +154,9 @@ def index():
 def serve_static(filename):
     return send_from_directory('static', filename)
 
-
-@app.route("/<product>")
-def product_page(product):
-    product_config = get_product_config(product)
-    return render_template(f"product.html", product=product_config)
-
+@app.route('/product/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('product', filename)
 
 @app.route("/<product>/order", methods=["POST"])
 def product_order(product):
