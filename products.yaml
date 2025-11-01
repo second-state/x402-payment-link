@@ -2,10 +2,6 @@ echokit_diy:
   name: EchoKit DIY
   description: "EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience."
   image: https://echokit.dev/media/echokit-diy-03.png
-  next_1_text: "Keep shopping" 
-  next_1_url: https://echokit.dev/
-  next_2_text: "EchoKit quick start" 
-  next_2_url: https://echokit.dev/docs/quick-start/
   staging:
     price: 0.1
     shipping: 0
@@ -17,10 +13,6 @@ demo:
   name: x402 labs demo
   description: "Pay to get the x402 whitepaper!"
   image: https://www.x402.org/_next/image?url=%2Fx402-logo.png&w=640&q=75
-  next_1_text: "protocol" 
-  next_1_url: https://github.com/coinbase/x402
-  next_2_text: "white paper" 
-  next_2_url: https://www.x402.org/x402-whitepaper.pdf
   staging:
     price: 0.1
     shipping: 0

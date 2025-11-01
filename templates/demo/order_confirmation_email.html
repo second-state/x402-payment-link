@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Order Confirmed!</h1>
+                            <p style="margin: 10px 0 0 0; color: #f0f0f0; font-size: 16px;">Thank you for your purchase</p>
+                        </td>
+                    </tr>
+
+                    <!-- Order ID Section -->
+                    <tr>
+                        <td style="padding: 30px 30px 20px 30px; text-align: center; background-color: #f8f9fa;">
+                            <p style="margin: 0 0 8px 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Order Number</p>
+                            <p style="margin: 0; color: #333; font-size: 24px; font-weight: 600; letter-spacing: 2px; font-family: 'Courier New', monospace;">{{ order_id }}</p>
+                        </td>
+                    </tr>
+
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; font-weight: 600;">Hi {{ name }},</h2>
+                            <p style="margin: 0 0 15px 0; color: #666; font-size: 16px; line-height: 1.6;">
+                                We've received your order and payment has been verified successfully! Your EchoKit device will be shipped to the address below.
+                            </p>
+
+                            <!-- Order Summary -->
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 25px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
+                                <tr>
+                                    <td colspan="2" style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0;">
+                                        <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Order Summary</h3>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #666; font-size: 14px; width: 60%;">{{ product.name }}</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500; text-align: right;">${{ "%.2f"|format(product.price) }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #666; font-size: 14px; background-color: #ffffff;">Shipping</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500; background-color: #ffffff; text-align: right;">${{ "%.2f"|format(product.shipping) }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 600; border-top: 2px solid #e0e0e0;">Total</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 16px; font-weight: 600; border-top: 2px solid #e0e0e0; text-align: right;">${{ "%.2f"|format(product.total) }}</td>
+                                </tr>
+                            </table>
+
+                            <!-- Order Details -->
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 30px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
+                                <tr>
+                                    <td colspan="2" style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0;">
+                                        <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Order Details</h3>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #666; font-size: 14px; width: 40%;">Product</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500;">EchoKit Device</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #666; font-size: 14px; background-color: #ffffff;">Quantity</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500; background-color: #ffffff;">1</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 20px; color: #666; font-size: 14px;">Payment Status</td>
+                                    <td style="padding: 12px 20px;">
+                                        <span style="display: inline-block; padding: 4px 12px; background-color: #4caf50; color: #ffffff; font-size: 12px; font-weight: 600; border-radius: 12px;">✓ Verified</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Shipping Address -->
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
+                                <tr>
+                                    <td style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0;">
+                                        <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Shipping Address</h3>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 15px 20px;">
+                                        <p style="margin: 0 0 5px 0; color: #333; font-size: 14px; font-weight: 500;">{{ name }}</p>
+                                        <p style="margin: 0 0 5px 0; color: #666; font-size: 14px; line-height: 1.5;">{{ address1 }}</p>
+                                        {% if address2 %}
+                                        <p style="margin: 0 0 5px 0; color: #666; font-size: 14px; line-height: 1.5;">{{ address2 }}</p>
+                                        {% endif %}
+                                        <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.5;">{{ state }}, {{ zip }}</p>
+                                        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px; line-height: 1.5;">{{ country }}</p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Contact Info -->
+                            {% if phone or email %}
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
+                                <tr>
+                                    <td style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0;">
+                                        <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Contact Information</h3>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 15px 20px;">
+                                        {% if email %}
+                                        <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;"><strong>Email:</strong> {{ email }}</p>
+                                        {% endif %}
+                                        {% if phone %}
+                                        <p style="margin: 0; color: #666; font-size: 14px;"><strong>Phone:</strong> {{ phone }}</p>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                            {% endif %}
+
+                            <!-- Next Steps -->
+                            <div style="margin-top: 30px; padding: 20px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+                                <h3 style="margin: 0 0 10px 0; color: #1976d2; font-size: 16px; font-weight: 600;">What's Next?</h3>
+                                <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6;">
+                                    We'll process your order and send you a shipping confirmation with tracking information within 1-2 business days.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #f8f9fa; text-align: center; border-top: 1px solid #e0e0e0;">
+                            <p style="margin: 0; color: #999; font-size: 12px;">
+                                &copy; 2025 x402labs. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

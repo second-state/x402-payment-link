@@ -429,14 +429,6 @@
         <div class="form-container" id="shippingForm">
             <div class="section-title">Order Information</div>
             
-            <div class="checkbox-group">
-                <input type="checkbox" id="unicefDonation" name="unicefDonation">
-                <label for="unicefDonation" class="checkbox-label">
-                    <span class="unicef-icon">💙</span>
-                    <span>Donate to UNICEF (we'll ship to UNICEF for you)</span>
-                </label>
-            </div>
-
             <form id="checkoutForm" action="/{{ product.id }}/order" method="POST" novalidate>
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -536,22 +528,13 @@
 
                         <div>
                             <label for="country">Country</label>
-                            <select id="country" name="country" required>
-                                <option value="">Select country</option>
-                                <option value="US">United States</option>
-                                <option value="CA">Canada</option>
-                                <option value="GB">United Kingdom</option>
-                                <option value="AU">Australia</option>
-                                <option value="DE">Germany</option>
-                                <option value="FR">France</option>
-                                <option value="IT">Italy</option>
-                                <option value="ES">Spain</option>
-                                <option value="MX">Mexico</option>
-                                <option value="BR">Brazil</option>
-                                <option value="JP">Japan</option>
-                                <option value="CN">China</option>
-                                <option value="IN">India</option>
-                            </select>
+                            <input
+                                type="text"
+                                id="country"
+                                name="country"
+                                placeholder="USA"
+                                required
+                            >
                             <div class="error-message" id="countryError">Required</div>
                         </div>
                     </div>
@@ -565,7 +548,7 @@
                     <svg class="lock-icon" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                     </svg>
-                    Secure checkout powered by x402
+                    Secure checkout powered by x402 labs
                 </div>
             </form>
         </div>
@@ -591,46 +574,12 @@
         const submitButton = document.getElementById('submitButton');
         const shippingForm = document.getElementById('shippingForm');
         const successMessage = document.getElementById('successMessage');
-        const unicefCheckbox = document.getElementById('unicefDonation');
         const addressFields = document.getElementById('addressFields');
         const shippingCost = document.getElementById('shippingCost');
         const totalCost = document.getElementById('totalCost');
 
         // Track current total for button (from backend)
         let currentTotal = {{ product.total }};
-
-        // Handle UNICEF donation checkbox
-        unicefCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                addressFields.classList.add('hidden');
-                // Shipping cost stays the same (shipping to UNICEF)
-                // No cost changes needed
-                currentTotal = {{ product.total }};
-                // Clear address field requirements
-                phoneInput.removeAttribute('required');
-                fullNameInput.removeAttribute('required');
-                address1Input.removeAttribute('required');
-                cityInput.removeAttribute('required');
-                stateInput.removeAttribute('required');
-                zipInput.removeAttribute('required');
-                countryInput.removeAttribute('required');
-                // Clear any errors
-                clearAllErrors();
-            } else {
-                addressFields.classList.remove('hidden');
-                currentTotal = {{ product.total }};
-                // Restore address field requirements
-                phoneInput.setAttribute('required', 'required');
-                fullNameInput.setAttribute('required', 'required');
-                address1Input.setAttribute('required', 'required');
-                cityInput.setAttribute('required', 'required');
-                stateInput.setAttribute('required', 'required');
-                zipInput.setAttribute('required', 'required');
-                countryInput.setAttribute('required', 'required');
-            }
-            // Update button text with current total
-            submitButton.textContent = `Pay $${currentTotal.toFixed(2)}`;
-        });
 
         // Format phone number
         phoneInput.addEventListener('input', function(e) {
