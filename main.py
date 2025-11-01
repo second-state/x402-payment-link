@@ -31,14 +31,14 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "staging")
 
 def get_products():
     """Get all products from product.yaml"""
-    with open('product.yaml', 'r') as f:
+    with open('products.yaml', 'r') as f:
         product_catalog = yaml.safe_load(f)
     return product_catalog.keys()
 
 
 def get_product_config(product_id):
     """Get product configuration based on current environment"""
-    with open('product.yaml', 'r') as f:
+    with open('products.yaml', 'r') as f:
         product_catalog = yaml.safe_load(f)
     if product_id not in product_catalog:
         return None
@@ -145,7 +145,6 @@ def index():
         html += f'<li><a href="/{product}">{product}</a></li>'
     return html
 
-
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
@@ -154,8 +153,11 @@ def serve_static(filename):
 @app.route("/<product>")
 def product_page(product):
     product_config = get_product_config(product)
-    return render_template(f"product.html", product=product_config)
+    return render_template(f"{product}/product.html", product=product_config)
 
+@app.route('/product/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('product', filename)
 
 @app.route("/<product>/order", methods=["POST"])
 def product_order(product):
@@ -211,7 +213,7 @@ def product_order_id(product, order_id):
                 cc_email = Cc(order_confirmation_recipient)
                 subject = f"Order Confirmation - {order_id}"
                 html_content = render_template(
-                    "order_confirmation_email.html",
+                    f"{product}/order_confirmation_email.html",
                     order_id=order_id,
                     name=order.get("name", "Customer"),
                     email=order.get("email"),
@@ -230,7 +232,7 @@ def product_order_id(product, order_id):
             except Exception as e:
                 app.logger.error(f"Failed to send email: {e}")
 
-    return render_template("order_confirmation.html", order_id=order_id)
+    return render_template(f"{product}/order_confirmation.html", order_id=order_id)
 
 
 if __name__ == "__main__":
