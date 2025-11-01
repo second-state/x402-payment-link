@@ -145,6 +145,7 @@ def index():
         html += f'<li><a href="/{product}">{product}</a></li>'
     return html
 
+
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
@@ -155,9 +156,6 @@ def product_page(product):
     product_config = get_product_config(product)
     return render_template(f"{product}/product.html", product=product_config)
 
-@app.route('/product/<path:filename>')
-def serve_static(filename):
-    return send_from_directory('product', filename)
 
 @app.route("/<product>/order", methods=["POST"])
 def product_order(product):
