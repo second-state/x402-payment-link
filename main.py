@@ -5,6 +5,7 @@ import string
 import time
 
 import sendgrid
+import yaml
 from cdp.x402 import create_facilitator_config
 from dotenv import load_dotenv
 from flask import (Flask, redirect, render_template, request,
@@ -15,7 +16,7 @@ from x402.facilitator import FacilitatorConfig
 from x402.flask.middleware import PaymentMiddleware
 from x402.types import PaywallConfig
 
-ORDER_FILE_PATH = "data/orders.txt"
+ORDER_DIR = "data"
 
 # Load environment variables
 load_dotenv()
@@ -27,34 +28,29 @@ CDP_API_KEY_ID = os.getenv("CDP_API_KEY_ID")
 CDP_API_KEY_SECRET = os.getenv("CDP_API_KEY_SECRET")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "staging")
 
-# Product pricing configuration
-PRODUCT_CATALOG = {
-    "echokit_diy": {
-        "name": "EchoKit DIY",
-        "description": "EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience.",
-        "staging": {
-            "price": 0.10,  # Product price in dollars
-            "shipping": 0.00,  # Shipping cost in dollars
-        },
-        "production": {
-            "price": 49.00,  # Product price in dollars
-            "shipping": 4.99,  # Shipping cost in dollars
-        }
-    }
-}
+
+def get_products():
+    """Get all products from product.yaml"""
+    with open('products.yaml', 'r') as f:
+        product_catalog = yaml.safe_load(f)
+    return product_catalog.keys()
 
 
 def get_product_config(product_id):
     """Get product configuration based on current environment"""
-    if product_id not in PRODUCT_CATALOG:
+    with open('products.yaml', 'r') as f:
+        product_catalog = yaml.safe_load(f)
+    if product_id not in product_catalog:
         return None
 
-    product = PRODUCT_CATALOG[product_id]
+    product = product_catalog[product_id]
     env_config = product.get(ENVIRONMENT, product.get("production"))
 
     return {
+        "id": product_id,
         "name": product["name"],
         "description": product["description"],
+        "image": product["image"],
         "price": env_config["price"],
         "shipping": env_config["shipping"],
         "total": env_config["price"] + env_config["shipping"],
@@ -93,19 +89,19 @@ elif NETWORK == "base":
 payment_middleware = PaymentMiddleware(app)
 
 # Get product configuration for payment middleware
-echokit_config = get_product_config("echokit_diy")
-
-payment_middleware.add(
-    path="/echokit_diy/order/*",
-    price=f"${echokit_config['total']:.2f}",
-    pay_to_address=ADDRESS,
-    network=NETWORK,
-    paywall_config=PaywallConfig(
-        app_name="x402-mvp",
-        app_logo="/static/secondstate.png",
-    ),
-    facilitator_config=facilitator_config,
-)
+for product in get_products():
+    product_config = get_product_config(product)
+    payment_middleware.add(
+        path=f"/{product}/order/*",
+        price=f"${product_config['total']:.2f}",
+        pay_to_address=ADDRESS,
+        network=NETWORK,
+        paywall_config=PaywallConfig(
+            app_name="x402-mvp",
+            app_logo="/static/secondstate.png",
+        ),
+        facilitator_config=facilitator_config,
+    )
 
 app.wsgi_app = ProxyFix(
     app.wsgi_app,
@@ -119,15 +115,20 @@ def generate_order_id(length=12):
     return ''.join(secrets.choice(chars) for _ in range(length))
 
 
-def get_orders():
+def get_orders(product):
     try:
-        with open(ORDER_FILE_PATH, "r") as f:
+        with open(f"{ORDER_DIR}/{product}.txt", "r") as f:
             orders = [json.loads(line) for line in f.readlines()]
     except FileNotFoundError:
         # Create a new file if not exists
-        with open(ORDER_FILE_PATH, "w") as f:
+        with open(f"{ORDER_DIR}/{product}.txt", "w") as f:
             pass
     return orders
+
+
+def save_product_order(product, data):
+    with open(f"{ORDER_DIR}/{product}.txt", "a") as f:
+        f.write(f"{json.dumps(data)}\n")
 
 
 @app.after_request
@@ -138,8 +139,11 @@ def add_security_headers(response):
 
 @app.route("/")
 def index():
-    product_config = get_product_config("echokit_diy")
-    return render_template("index.html", network=NETWORK, product=product_config)
+    html = ''
+    products = get_products()
+    for product in products:
+        html += f'<li><a href="/{product}">{product}</a></li>'
+    return html
 
 
 @app.route('/static/<path:filename>')
@@ -147,14 +151,14 @@ def serve_static(filename):
     return send_from_directory('static', filename)
 
 
-@app.route("/echokit_diy")
-def echokit_diy():
-    product_config = get_product_config("echokit_diy")
-    return render_template("echokit_diy.html", product=product_config)
+@app.route("/<product>")
+def product_page(product):
+    product_config = get_product_config(product)
+    return render_template(f"{product}/product.html", product=product_config)
 
 
-@app.route("/echokit_diy/order", methods=["POST"])
-def echokit_diy_order():
+@app.route("/<product>/order", methods=["POST"])
+def product_order(product):
     timestamp = time.time()
     email = request.form.get("email")
     phone = request.form.get("phone")
@@ -178,21 +182,19 @@ def echokit_diy_order():
         "order_id": order_id,
         "payment": False,
     }
-    with open(ORDER_FILE_PATH, "a") as f:
-        f.write(f"{json.dumps(data)}\n")
-    return redirect(f"/echokit_diy/order/{order_id}")
+    save_product_order(product, data)
+    return redirect(f"/{product}/order/{order_id}")
 
 
-@app.route("/echokit_diy/order/<order_id>")
-def echokit_diy_order_id(order_id):
-    orders = get_orders()
+@app.route("/<product>/order/<order_id>")
+def product_order_id(product, order_id):
+    orders = get_orders(product)
     order = next((order for order in orders if order.get(
         "order_id") == order_id), None)
     if order:
         order["time"] = time.time()
         order["payment"] = True
-        with open(ORDER_FILE_PATH, "a") as f:
-            f.write(f"{json.dumps(order)}\n")
+        save_product_order(product, order)
 
         # Send order confirmation email
         load_dotenv()
@@ -201,7 +203,7 @@ def echokit_diy_order_id(order_id):
         if order.get("email") and order_confirmation_recipient:
             try:
                 # Get product configuration for email
-                product_config = get_product_config("echokit_diy")
+                product_config = get_product_config(product)
                 sendgrid_client = sendgrid.SendGridAPIClient(
                     api_key=os.getenv('SENDGRID_API_KEY'))
                 from_email = Email("vivian@secondstate.io")
@@ -209,7 +211,7 @@ def echokit_diy_order_id(order_id):
                 cc_email = Cc(order_confirmation_recipient)
                 subject = f"Order Confirmation - {order_id}"
                 html_content = render_template(
-                    "order_confirmation_email.html",
+                    f"{product}/order_confirmation_email.html",
                     order_id=order_id,
                     name=order.get("name", "Customer"),
                     email=order.get("email"),
@@ -228,7 +230,7 @@ def echokit_diy_order_id(order_id):
             except Exception as e:
                 app.logger.error(f"Failed to send email: {e}")
 
-    return render_template("order_confirmation.html", order_id=order_id)
+    return render_template(f"{product}/order_confirmation.html", order_id=order_id)
 
 
 if __name__ == "__main__":
