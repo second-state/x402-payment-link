@@ -582,6 +582,7 @@
         let currentTotal = {{ product.total }};
 
         // Format phone number
+        /*
         phoneInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             let formatted = value;
@@ -602,6 +603,7 @@
                 clearError('phone');
             }
         });
+        */
 
         // Clear errors on input
         emailInput.addEventListener('input', () => clearError('email'));
@@ -619,8 +621,9 @@
         }
 
         function validatePhone(phone) {
+            const hasPlus = phone.trim().startsWith('+');
             const cleaned = phone.replace(/\D/g, '');
-            return cleaned.length >= 10;
+            return hasPlus && cleaned.length >= 7 && cleaned.length <= 15;
         }
 
         function validateRequired(value) {
