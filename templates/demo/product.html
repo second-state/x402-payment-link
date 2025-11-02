@@ -621,9 +621,8 @@
         }
 
         function validatePhone(phone) {
-            const hasPlus = phone.trim().startsWith('+');
-            const cleaned = phone.replace(/\D/g, '');
-            return hasPlus && cleaned.length >= 7 && cleaned.length <= 15;
+            const cleaned = phone.trim().replace(/\D/g, '');
+            return cleaned.length >= 7 && cleaned.length <= 15;
         }
 
         function validateRequired(value) {
