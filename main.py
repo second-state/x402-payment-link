@@ -146,11 +146,6 @@ def index():
     return html
 
 
-@app.route('/favicon.ico')
-def serve_favicon():
-    return send_from_directory('static', 'secondstate.png')
-
-
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
@@ -159,6 +154,8 @@ def serve_static(filename):
 @app.route("/<product>")
 def product_page(product):
     product_config = get_product_config(product)
+    if not product_config:
+        return "Not found", 404
     return render_template(f"{product}/product.html", product=product_config)
 
 
