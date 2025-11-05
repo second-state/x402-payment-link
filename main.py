@@ -146,6 +146,11 @@ def index():
     return html
 
 
+@app.route('/favicon.ico')
+def serve_favicon():
+    return send_from_directory('static', 'secondstate.png')
+
+
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
