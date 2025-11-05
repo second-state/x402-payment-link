@@ -68,16 +68,6 @@ else:
     raise ValueError(f"Unsupported network: {NETWORK}")
 
 app = Flask(__name__)
-app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", "587"))
-app.config["MAIL_USE_TLS"] = os.getenv(
-    "MAIL_USE_TLS", "true").lower() == "true"
-app.config["MAIL_USE_SSL"] = os.getenv(
-    "MAIL_USE_SSL", "false").lower() == "true"
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
-mail = Mail(app)
 
 if NETWORK == "base-sepolia":
     facilitator_config = FacilitatorConfig(
