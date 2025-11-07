@@ -4,7 +4,7 @@ echokit_diy:
   image: https://echokit.dev/media/echokit-diy-03.png
   staging:
     price: 0.1
-    shipping: 0
+    shipping: 0.1
   production:
     price: 49.00
     shipping: 4.99
@@ -17,5 +17,5 @@ demo:
     price: 0.1
     shipping: 0
   production:
-    price: 0.01
+    price: 0.1
     shipping: 0

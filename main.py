@@ -92,8 +92,7 @@ def get_product_config(product_id):
         "image": product["image"],
         "price": env_config["price"],
         "shipping": env_config["shipping"],
-        "total": env_config["price"] + env_config["shipping"],
-        "environment": ENVIRONMENT
+        "environment": ENVIRONMENT,
     }
 
 
@@ -171,6 +170,9 @@ def product_page(product):
 
 @app.route("/<product>/order", methods=["POST"])
 def product_order(product):
+    product_config = get_product_config(product)
+    if not product_config:
+        return "Not found", 404
     timestamp = time.time()
     email = request.form.get("email")
     phone = request.form.get("phone")
@@ -181,6 +183,9 @@ def product_order(product):
     zip = request.form.get("zip")
     country = request.form.get("country")
     order_id = generate_order_id()
+    quantity = int(request.form.get("quantity", 1))
+    total = round(
+        quantity * product_config["price"] + product_config["shipping"], 2)
     data = {
         "time": timestamp,
         "email": email,
@@ -192,6 +197,8 @@ def product_order(product):
         "zip": zip,
         "country": country,
         "order_id": order_id,
+        "quantity": quantity,
+        "total": total,
         "payment": False,
     }
     save_product_order(product, data)
@@ -200,12 +207,20 @@ def product_order(product):
 
 @app.route("/<product>/order/<order_id>")
 def product_order_id(product, order_id):
+    # Get order details
+    orders = get_orders(product)
+    order = next((order for order in orders if order.get(
+        "order_id") == order_id), None)
+    if not order:
+        return "Not found", 404
+
     # Get product price
     product_config = get_product_config(product)
     if not product_config:
         return "Not found", 404
+    total_price = order.get("total")
     max_amount_required, asset_address, eip712_domain = (
-        process_price_to_atomic_amount(f"${product_config["total"]}", NETWORK)
+        process_price_to_atomic_amount(f"${total_price:.2f}", NETWORK)
     )
 
     # Prepare payment requirements
@@ -301,9 +316,6 @@ def product_order_id(product, order_id):
                 f"Transaction: https://basescan.org/tx/{settle_response.transaction}")
 
     # Payment settled
-    orders = get_orders(product)
-    order = next((order for order in orders if order.get(
-        "order_id") == order_id), None)
     if order:
         order["time"] = time.time()
         order["payment"] = True
