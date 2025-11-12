@@ -6,7 +6,7 @@ requires-python = ">=3.13"
 dependencies = [
     "cdp-sdk>=1.33.1",
     "dotenv>=0.9.9",
-    "flask>=3.1.2",
+    "flask[async]>=3.1.2",
     "pyyaml>=6.0.3",
     "sendgrid>=6.12.5",
     "werkzeug>=3.1.3",
