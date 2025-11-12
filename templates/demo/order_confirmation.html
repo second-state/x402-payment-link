@@ -53,6 +53,10 @@
     <a href="/demo">← Back</a>
     <h1>Order Confirmation</h1>
     <p>Order ID: {{ order_id }}</p>
+    <p>
+        Transaction:
+        <a href="{{ tx_link }}" target="_blank" rel="noopener noreferrer">{{ tx_hash }}</a>
+    </p>
     <p>Thank you for your order!</p>
     <div class="success"><strong>✓ Payment Verified</strong></div>
     <div style="margin-top: 30px;">

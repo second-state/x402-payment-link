@@ -307,55 +307,64 @@ def product_order_id(product, order_id):
     finally:
         loop.close()
     app.logger.info(f"Payment settled successfully ({order_id})")
-    if settle_response.transaction:
+    tx_hash = settle_response.transaction
+    tx_link = ''
+    if tx_hash:
         if settle_response.network == "base-sepolia":
+            tx_link = f"https://sepolia.basescan.org/tx/{tx_hash}"
             app.logger.info(
-                f"Transaction: https://sepolia.basescan.org/tx/{settle_response.transaction}")
+                f"Transaction: {tx_link}")
         elif settle_response.network == "base":
+            tx_link = f"https://basescan.org/tx/{tx_hash}"
             app.logger.info(
-                f"Transaction: https://basescan.org/tx/{settle_response.transaction}")
+                f"Transaction: {tx_link}")
+    else:
+        app.logger.warning(f"No transaction hash returned ({order_id})")
 
     # Payment settled
-    if order:
-        order["time"] = time.time()
-        order["payment"] = True
-        save_product_order(product, order)
+    order["time"] = time.time()
+    order["payment"] = True
+    save_product_order(product, order)
 
-        # Send order confirmation email
-        load_dotenv()
-        order_confirmation_recipient = os.getenv(
-            "ORDER_CONFIRMATION_RECIPIENT")
-        if order.get("email") and order_confirmation_recipient:
-            try:
-                # Get product configuration for email
-                product_config = get_product_config(product)
-                sendgrid_client = sendgrid.SendGridAPIClient(
-                    api_key=os.getenv('SENDGRID_API_KEY'))
-                from_email = Email("vivian@secondstate.io")
-                to_email = To(order.get("email"))
-                cc_email = Cc(order_confirmation_recipient)
-                subject = f"Order Confirmation - {order_id}"
-                html_content = render_template(
-                    f"{product}/order_confirmation_email.html",
-                    order_id=order_id,
-                    name=order.get("name", "Customer"),
-                    email=order.get("email"),
-                    phone=order.get("phone"),
-                    address1=order.get("address1"),
-                    address2=order.get("address2"),
-                    state=order.get("state"),
-                    zip=order.get("zip"),
-                    country=order.get("country"),
-                    product=product_config
-                )
-                mail = Mail(from_email, to_email,
-                            subject, html_content=html_content)
-                mail.cc = cc_email
-                sendgrid_client.send(mail)
-            except Exception as e:
-                app.logger.error(f"Failed to send email ({order_id}): {e}")
+    # Send order confirmation email
+    load_dotenv()
+    order_confirmation_recipient = os.getenv(
+        "ORDER_CONFIRMATION_RECIPIENT")
+    if order.get("email") and order_confirmation_recipient:
+        try:
+            # Get product configuration for email
+            product_config = get_product_config(product)
+            sendgrid_client = sendgrid.SendGridAPIClient(
+                api_key=os.getenv('SENDGRID_API_KEY'))
+            from_email = Email("vivian@secondstate.io")
+            to_email = To(order.get("email"))
+            cc_email = Cc(order_confirmation_recipient)
+            subject = f"Order Confirmation - {order_id}"
+            html_content = render_template(
+                f"{product}/order_confirmation_email.html",
+                order_id=order_id,
+                name=order.get("name", "Customer"),
+                email=order.get("email"),
+                phone=order.get("phone"),
+                address1=order.get("address1"),
+                address2=order.get("address2"),
+                state=order.get("state"),
+                zip=order.get("zip"),
+                country=order.get("country"),
+                total=order.get("total"),
+                quantity=order.get("quantity"),
+                product=product_config,
+                tx_hash=tx_hash,
+                tx_link=tx_link,
+            )
+            mail = Mail(from_email, to_email,
+                        subject, html_content=html_content)
+            mail.cc = cc_email
+            sendgrid_client.send(mail)
+        except Exception as e:
+            app.logger.error(f"Failed to send email ({order_id}): {e}")
 
-    return render_template(f"{product}/order_confirmation.html", order_id=order_id)
+    return render_template(f"{product}/order_confirmation.html", order_id=order_id, tx_hash=tx_hash, tx_link=tx_link)
 
 
 if __name__ == "__main__":
