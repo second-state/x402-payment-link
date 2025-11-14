@@ -332,6 +332,8 @@
         .price-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 8px;
             font-size: 14px;
             color: #32325d;
@@ -343,6 +345,63 @@
             border-top: 1px solid #e6ebf1;
             font-weight: 600;
             font-size: 16px;
+        }
+
+        .price-row-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quantity-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 999px;
+            padding: 4px 8px;
+        }
+
+        .quantity-button {
+            border: none;
+            background: transparent;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #4b5563;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .quantity-button:hover {
+            background: #edf2ff;
+            color: #4f46e5;
+        }
+
+        .quantity-input {
+            width: 48px;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .quantity-input:focus {
+            outline: none;
+        }
+
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .section-title {
@@ -412,7 +471,25 @@
 
             <div class="price-breakdown">
                 <div class="price-row">
-                    <span>{{ product.name }}</span>
+                    <div class="price-row-left">
+                        <span>{{ product.name }}</span>
+                        <div class="quantity-control" aria-label="Select quantity">
+                            <button type="button" class="quantity-button" id="quantityDecrease" aria-label="Decrease quantity">-</button>
+                            <input
+                                type="text"
+                                id="quantityInput"
+                                name="quantity"
+                                class="quantity-input"
+                                value="1"
+                                form="checkoutForm"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                autocomplete="off"
+                                aria-live="polite"
+                            >
+                            <button type="button" class="quantity-button" id="quantityIncrease" aria-label="Increase quantity">+</button>
+                        </div>
+                    </div>
                     <span id="productPrice">${{ "%.2f"|format(product.price) }}</span>
                 </div>
                 <div class="price-row">
@@ -421,7 +498,7 @@
                 </div>
                 <div class="price-row">
                     <span>Total</span>
-                    <span id="totalCost">${{ "%.2f"|format(product.total) }}</span>
+                    <span id="totalCost">${{ "%.2f"|format(product.price + product.shipping) }}</span>
                 </div>
             </div>
         </div>
@@ -549,7 +626,7 @@
                 </div>
 
                 <button type="submit" class="submit-button" id="submitButton">
-                    Pay ${{ "%.2f"|format(product.total) }}
+                    Pay ${{ "%.2f"|format(product.price + product.shipping) }}
                 </button>
 
                 <div class="secure-notice">
@@ -584,11 +661,71 @@
         const successMessage = document.getElementById('successMessage');
         const unicefCheckbox = document.getElementById('unicefDonation');
         const addressFields = document.getElementById('addressFields');
+        const productPriceElement = document.getElementById('productPrice');
         const shippingCost = document.getElementById('shippingCost');
         const totalCost = document.getElementById('totalCost');
+        const quantityInput = document.getElementById('quantityInput');
+        const quantityDecrease = document.getElementById('quantityDecrease');
+        const quantityIncrease = document.getElementById('quantityIncrease');
+
+        const unitPrice = {{ "%.2f"|format(product.price) }};
+        const shippingPrice = {{ "%.2f"|format(product.shipping) }};
 
         // Track current total for button (from backend)
-        let currentTotal = {{ product.total }};
+        let currentTotal = {{ product.price + product.shipping }};
+
+        function sanitizeQuantity(value) {
+            const numeric = parseInt(value, 10);
+            return Number.isNaN(numeric) || numeric < 1 ? 1 : numeric;
+        }
+
+        function updateOrderSummary(quantity) {
+            const productSubtotal = unitPrice * quantity;
+            const orderTotal = productSubtotal + shippingPrice;
+            productPriceElement.textContent = `$${productSubtotal.toFixed(2)}`;
+            totalCost.textContent = `$${orderTotal.toFixed(2)}`;
+            currentTotal = orderTotal;
+            submitButton.textContent = `Pay $${orderTotal.toFixed(2)}`;
+        }
+
+        function syncQuantityAndTotals(value) {
+            const safeValue = sanitizeQuantity(value);
+            quantityInput.value = safeValue;
+            updateOrderSummary(safeValue);
+        }
+
+        quantityDecrease.addEventListener('click', () => {
+            const nextQuantity = Math.max(1, sanitizeQuantity(quantityInput.value) - 1);
+            syncQuantityAndTotals(nextQuantity);
+        });
+
+        quantityIncrease.addEventListener('click', () => {
+            const nextQuantity = sanitizeQuantity(quantityInput.value) + 1;
+            syncQuantityAndTotals(nextQuantity);
+        });
+
+        quantityInput.addEventListener('input', () => {
+            const digitsOnly = quantityInput.value.replace(/\D/g, '');
+            quantityInput.value = digitsOnly;
+        });
+
+        quantityInput.addEventListener('blur', () => {
+            syncQuantityAndTotals(quantityInput.value);
+        });
+
+        quantityInput.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                syncQuantityAndTotals(sanitizeQuantity(quantityInput.value) + 1);
+            }
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                const nextQuantity = Math.max(1, sanitizeQuantity(quantityInput.value) - 1);
+                syncQuantityAndTotals(nextQuantity);
+            }
+        });
+
+        syncQuantityAndTotals(quantityInput.value);
 
         // Handle UNICEF donation checkbox
         unicefCheckbox.addEventListener('change', function() {
@@ -596,7 +733,6 @@
                 addressFields.classList.add('hidden');
                 // Shipping cost stays the same (shipping to UNICEF)
                 // No cost changes needed
-                currentTotal = {{ product.total }};
                 // Clear address field requirements
                 phoneInput.removeAttribute('required');
                 fullNameInput.removeAttribute('required');
@@ -609,7 +745,6 @@
                 clearAllErrors();
             } else {
                 addressFields.classList.remove('hidden');
-                currentTotal = {{ product.total }};
                 // Restore address field requirements
                 phoneInput.setAttribute('required', 'required');
                 fullNameInput.setAttribute('required', 'required');
@@ -619,8 +754,8 @@
                 zipInput.setAttribute('required', 'required');
                 countryInput.setAttribute('required', 'required');
             }
-            // Update button text with current total
-            submitButton.textContent = `Pay $${currentTotal.toFixed(2)}`;
+            // Keep totals in sync with the current quantity
+            syncQuantityAndTotals(quantityInput.value);
         });
 
         // Format phone number
@@ -698,6 +833,9 @@
         // Form submission
         form.addEventListener('submit', function(e) {
             clearAllErrors();
+            const safeQuantity = sanitizeQuantity(quantityInput.value);
+            quantityInput.value = safeQuantity;
+            updateOrderSummary(safeQuantity);
 
             let isValid = true;
 
