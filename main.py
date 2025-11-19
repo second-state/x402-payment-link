@@ -170,6 +170,7 @@ async def product_order_id(product, order_id):
         payment_header, payment_requirements, order_id
     )
     if error:
+        app.logger.error(f"Payment header parse error ({order_id}): {error}")
         return x402_response(error, payment_requirements)
 
     # Verify payment
@@ -178,6 +179,8 @@ async def product_order_id(product, order_id):
         facilitator, payment, selected_requirements, order_id
     )
     if not is_valid:
+        app.logger.error(
+            f"Payment verification error ({order_id}): {verify_error}")
         return x402_response(verify_error, payment_requirements)
 
     # Settle payment
@@ -185,6 +188,8 @@ async def product_order_id(product, order_id):
         facilitator, payment, selected_requirements, order_id
     )
     if not success:
+        app.logger.error(
+            f"Payment settlement error ({order_id}): {settle_error}")
         return x402_response(settle_error, payment_requirements)
 
     # Generate transaction link
