@@ -35,15 +35,11 @@ PAYWALL_CONFIG = PaywallConfig(
     app_logo=os.getenv("APP_LOGO", "/static/secondstate.png"),
 )
 
-# Validate required environment variables and create facilitator config
-if NETWORK == "base-sepolia":
-    if not ADDRESS:
-        raise ValueError("Missing required environment variable: ADDRESS")
-    facilitator_config = FacilitatorConfig(url="https://x402.org/facilitator")
-elif NETWORK == "base":
-    if not ADDRESS or not CDP_API_KEY_ID or not CDP_API_KEY_SECRET:
-        raise ValueError("Missing required environment variables for base network")
-    facilitator_config = create_facilitator_config(
-        CDP_API_KEY_ID, CDP_API_KEY_SECRET)
-else:
+# Validate required environment variables
+if not ADDRESS:
+    raise ValueError("Missing required environment variable: ADDRESS")
+supported_networks = ["base-sepolia", "base"]
+if NETWORK not in supported_networks:
     raise ValueError(f"Unsupported network: {NETWORK}")
+# Create facilitator config
+FACILITATOR_CONFIG = FacilitatorConfig(url="https://x402f1.secondstate.io")
