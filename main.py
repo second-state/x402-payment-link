@@ -3,7 +3,8 @@ import os
 import time
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, redirect, render_template, request, send_from_directory
+from flask import (Flask, redirect, render_template, request,
+                   send_from_directory)
 from werkzeug.middleware.proxy_fix import ProxyFix
 from x402.common import x402_VERSION
 from x402.facilitator import FacilitatorClient
@@ -11,19 +12,10 @@ from x402.paywall import get_paywall_html, is_browser_request
 from x402.types import x402PaymentRequiredResponse
 
 # Import configuration
-from config import (
-    ADDRESS,
-    APP_PORT,
-    ENVIRONMENT,
-    FROM_EMAIL,
-    MAX_DEADLINE_SECONDS,
-    NETWORK,
-    ORDER_CONFIRMATION_RECIPIENT,
-    PAYWALL_CONFIG,
-    SENDGRID_API_KEY,
-    facilitator_config,
-)
-
+from config import (ADDRESS, APP_PORT, ENVIRONMENT, FACILITATOR_CONFIG,
+                    FROM_EMAIL, MAX_DEADLINE_SECONDS, NETWORK,
+                    ORDER_CONFIRMATION_RECIPIENT, PAYWALL_CONFIG,
+                    SENDGRID_API_KEY)
 # Import services
 from services.notification_service import send_order_confirmation_email
 from services.order_service import (generate_order_id, get_order_by_id,
@@ -170,21 +162,25 @@ async def product_order_id(product, order_id):
     if payment_header == "":
         return x402_response("No X-PAYMENT header provided", payment_requirements)
 
-    app.logger.info(f"Received X-PAYMENT header ({order_id}): {payment_header}")
+    app.logger.info(
+        f"Received X-PAYMENT header ({order_id}): {payment_header}")
 
     # Parse and validate payment header
     payment, selected_requirements, error = parse_payment_header(
         payment_header, payment_requirements, order_id
     )
     if error:
+        app.logger.error(f"Payment header parse error ({order_id}): {error}")
         return x402_response(error, payment_requirements)
 
     # Verify payment
-    facilitator = FacilitatorClient(facilitator_config)
+    facilitator = FacilitatorClient(FACILITATOR_CONFIG)
     is_valid, verify_error = await verify_payment(
         facilitator, payment, selected_requirements, order_id
     )
     if not is_valid:
+        app.logger.error(
+            f"Payment verification error ({order_id}): {verify_error}")
         return x402_response(verify_error, payment_requirements)
 
     # Settle payment
@@ -192,6 +188,8 @@ async def product_order_id(product, order_id):
         facilitator, payment, selected_requirements, order_id
     )
     if not success:
+        app.logger.error(
+            f"Payment settlement error ({order_id}): {settle_error}")
         return x402_response(settle_error, payment_requirements)
 
     # Generate transaction link
