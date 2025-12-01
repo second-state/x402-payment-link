@@ -1774,7 +1774,7 @@ wheels = [
 [[package]]
 name = "x402"
 version = "0.2.1"
-source = { git = "https://github.com/coinbase/x402.git?subdirectory=python%2Fx402#f3d44638965794ff9b550cdbba1f8197ab4a8df5" }
+source = { git = "https://github.com/coinbase/x402.git?subdirectory=python%2Fx402#95b01e1463ee717cda3a80c3883864d4728e8408" }
 dependencies = [
     { name = "eth-account" },
     { name = "eth-typing" },
