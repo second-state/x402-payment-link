@@ -56,7 +56,7 @@ def x402_response(error, payment_requirements):
         html_content = get_paywall_html(
             error, payment_requirements, PAYWALL_CONFIG
         )
-        return html_content, 402
+        return html_content, 400
     else:
         response_data = x402PaymentRequiredResponse(
             x402_version=x402_VERSION,
@@ -64,7 +64,7 @@ def x402_response(error, payment_requirements):
             error=error,
         ).model_dump(by_alias=True)
 
-        return response_data, 402
+        return response_data, 400
 
 
 @app.after_request
