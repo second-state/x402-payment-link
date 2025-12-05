@@ -246,42 +246,6 @@
             }
         }
 
-        .success-message {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            grid-column: 1 / -1;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        .success-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 20px;
-            background: #00d924;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 30px;
-        }
-
-        .success-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 10px;
-        }
-
-        .success-text {
-            font-size: 15px;
-            color: #6b7c93;
-        }
-
         .product-info {
             display: flex;
             gap: 20px;
@@ -637,12 +601,6 @@
                 </div>
             </form>
         </div>
-
-        <div class="success-message" id="successMessage">
-            <div class="success-icon">✓</div>
-            <div class="success-title">Information Submitted!</div>
-            <div class="success-text">Your shipping information has been saved successfully.</div>
-        </div>
     </div>
 
     <script>
@@ -658,7 +616,6 @@
         const countryInput = document.getElementById('country');
         const submitButton = document.getElementById('submitButton');
         const shippingForm = document.getElementById('shippingForm');
-        const successMessage = document.getElementById('successMessage');
         const unicefCheckbox = document.getElementById('unicefDonation');
         const addressFields = document.getElementById('addressFields');
         const productPriceElement = document.getElementById('productPrice');

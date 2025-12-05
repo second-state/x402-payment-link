@@ -41,5 +41,7 @@ if not ADDRESS:
 supported_networks = ["base-sepolia", "base"]
 if NETWORK not in supported_networks:
     raise ValueError(f"Unsupported network: {NETWORK}")
+
 # Create facilitator config
-FACILITATOR_CONFIG = FacilitatorConfig(url="https://x402f1.secondstate.io")
+FACILITATOR_URL = os.getenv("FACILITATOR_URL", "https://x402f1.secondstate.io")
+FACILITATOR_CONFIG = FacilitatorConfig(url=FACILITATOR_URL)

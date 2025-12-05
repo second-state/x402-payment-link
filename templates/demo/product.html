@@ -246,42 +246,6 @@
             }
         }
 
-        .success-message {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            grid-column: 1 / -1;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        .success-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 20px;
-            background: #00d924;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 30px;
-        }
-
-        .success-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 10px;
-        }
-
-        .success-text {
-            font-size: 15px;
-            color: #6b7c93;
-        }
-
         .product-info {
             display: flex;
             gap: 20px;
@@ -504,7 +468,7 @@
         </div>
 
         <div class="form-container" id="shippingForm">
-            <div class="section-title">Order Information</div>
+            <div class="section-title">Contact Information</div>
             
             <form id="checkoutForm" action="/{{ product.id }}/order" method="POST" novalidate>
                 <div class="form-group">
@@ -519,104 +483,6 @@
                     <div class="error-message" id="emailError">Please enter a valid email address</div>
                 </div>
 
-                <div class="address-fields" id="addressFields">
-                    <div class="form-group">
-                        <label for="phone">Phone number</label>
-                        <input
-                            type="tel"
-                            id="phone"
-                            name="phone"
-                            placeholder="+1 (555) 123-4567"
-                            required
-                        >
-                        <div class="error-message" id="phoneError">Please enter a valid phone number</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fullName">Full name</label>
-                        <input
-                            type="text"
-                            id="fullName"
-                            name="fullName"
-                            placeholder="John Smith"
-                            required
-                        >
-                        <div class="error-message" id="fullNameError">Please enter your full name</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="address1">Address line 1</label>
-                        <input
-                            type="text"
-                            id="address1"
-                            name="address1"
-                            placeholder="123 Main Street"
-                            required
-                        >
-                        <div class="error-message" id="address1Error">Please enter your address</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="address2">Address line 2 (optional)</label>
-                        <input
-                            type="text"
-                            id="address2"
-                            name="address2"
-                            placeholder="Apartment, suite, etc."
-                        >
-                    </div>
-
-                    <div class="form-group address-grid">
-                        <div>
-                            <label for="city">City</label>
-                            <input
-                                type="text"
-                                id="city"
-                                name="city"
-                                placeholder="San Francisco"
-                                required
-                            >
-                            <div class="error-message" id="cityError">Required</div>
-                        </div>
-
-                        <div>
-                            <label for="state">State / Province</label>
-                            <input
-                                type="text"
-                                id="state"
-                                name="state"
-                                placeholder="CA"
-                                required
-                            >
-                            <div class="error-message" id="stateError">Required</div>
-                        </div>
-
-                        <div>
-                            <label for="zip">ZIP / Postal code</label>
-                            <input
-                                type="text"
-                                id="zip"
-                                name="zip"
-                                placeholder="94102"
-                                required
-                            >
-                            <div class="error-message" id="zipError">Required</div>
-                        </div>
-
-                        <div>
-                            <label for="country">Country</label>
-                            <input
-                                type="text"
-                                id="country"
-                                name="country"
-                                placeholder="USA"
-                                required
-                            >
-                            <div class="error-message" id="countryError">Required</div>
-                        </div>
-                    </div>
-                </div>
-
                 <button type="submit" class="submit-button" id="submitButton">
                     Pay ${{ "%.2f"|format(product.price + product.shipping) }}
                 </button>
@@ -629,29 +495,13 @@
                 </div>
             </form>
         </div>
-
-        <div class="success-message" id="successMessage">
-            <div class="success-icon">✓</div>
-            <div class="success-title">Information Submitted!</div>
-            <div class="success-text">Your shipping information has been saved successfully.</div>
-        </div>
     </div>
 
     <script>
         // Get form elements
         const form = document.getElementById('checkoutForm');
         const emailInput = document.getElementById('email');
-        const phoneInput = document.getElementById('phone');
-        const fullNameInput = document.getElementById('fullName');
-        const address1Input = document.getElementById('address1');
-        const cityInput = document.getElementById('city');
-        const stateInput = document.getElementById('state');
-        const zipInput = document.getElementById('zip');
-        const countryInput = document.getElementById('country');
         const submitButton = document.getElementById('submitButton');
-        const shippingForm = document.getElementById('shippingForm');
-        const successMessage = document.getElementById('successMessage');
-        const addressFields = document.getElementById('addressFields');
         const productPriceElement = document.getElementById('productPrice');
         const shippingCost = document.getElementById('shippingCost');
         const totalCost = document.getElementById('totalCost');
@@ -718,57 +568,13 @@
 
         syncQuantityAndTotals(quantityInput.value);
 
-        // Format phone number
-        /*
-        phoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            let formatted = value;
-
-            if (value.length > 0) {
-                if (value.length <= 3) {
-                    formatted = value;
-                } else if (value.length <= 6) {
-                    formatted = '(' + value.slice(0, 3) + ') ' + value.slice(3);
-                } else {
-                    formatted = '(' + value.slice(0, 3) + ') ' + value.slice(3, 6) + '-' + value.slice(6, 10);
-                }
-            }
-
-            e.target.value = formatted;
-
-            if (value.length > 0) {
-                clearError('phone');
-            }
-        });
-        */
-
         // Clear errors on input
         emailInput.addEventListener('input', () => clearError('email'));
-        fullNameInput.addEventListener('input', () => clearError('fullName'));
-        address1Input.addEventListener('input', () => clearError('address1'));
-        cityInput.addEventListener('input', () => clearError('city'));
-        stateInput.addEventListener('input', () => clearError('state'));
-        zipInput.addEventListener('input', () => clearError('zip'));
-        countryInput.addEventListener('change', () => clearError('country'));
 
         // Validation functions
         function validateEmail(email) {
             const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return re.test(email);
-        }
-
-        function validatePhone(phone) {
-            const cleaned = phone.trim().replace(/\D/g, '');
-            return cleaned.length >= 7 && cleaned.length <= 15;
-        }
-
-        function validateRequired(value) {
-            return value.trim().length > 0;
-        }
-
-        function validateZip(zip) {
-            // Basic validation - at least 3 characters
-            return zip.trim().length >= 3;
         }
 
         function showError(fieldName) {
@@ -785,73 +591,24 @@
             error.classList.remove('show');
         }
 
-        function clearAllErrors() {
-            const errorFields = ['email', 'phone', 'fullName', 'address1', 'city', 'state', 'zip', 'country'];
-            errorFields.forEach(field => clearError(field));
-        }
-
         // Form submission
         form.addEventListener('submit', function(e) {
-            clearAllErrors();
+            clearError('email');
             const safeQuantity = sanitizeQuantity(quantityInput.value);
             quantityInput.value = safeQuantity;
             updateOrderSummary(safeQuantity);
 
             let isValid = true;
 
-            // Always validate email
+            // Validate email
             if (!validateEmail(emailInput.value)) {
                 showError('email');
                 isValid = false;
             }
 
-            // Validate phone
-            if (!validatePhone(phoneInput.value)) {
-                showError('phone');
-                isValid = false;
-            }
-
-            // Validate full name
-            if (!validateRequired(fullNameInput.value) || fullNameInput.value.trim().length < 2) {
-                showError('fullName');
-                isValid = false;
-            }
-
-            // Validate address1
-            if (!validateRequired(address1Input.value)) {
-                showError('address1');
-                isValid = false;
-            }
-
-            // Validate city
-            if (!validateRequired(cityInput.value)) {
-                showError('city');
-                isValid = false;
-            }
-
-            // Validate state
-            if (!validateRequired(stateInput.value)) {
-                showError('state');
-                isValid = false;
-            }
-
-            // Validate zip
-            if (!validateZip(zipInput.value)) {
-                showError('zip');
-                isValid = false;
-            }
-
-            // Validate country
-            if (!validateRequired(countryInput.value)) {
-                showError('country');
-                isValid = false;
-            }
-
-
             if (!isValid) {
                 e.preventDefault();
             } else {
-                // Simulate form submission
                 submitButton.disabled = true;
                 submitButton.textContent = 'Submitting...';
             }

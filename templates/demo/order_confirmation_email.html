@@ -33,9 +33,9 @@
                                 Transaction:
                                 <a href="{{ tx_link }}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none;">{{ tx_hash }}</a>
                             </p>
-                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; font-weight: 600;">Hi {{ name }},</h2>
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; font-weight: 600;">Thank you!</h2>
                             <p style="margin: 0 0 15px 0; color: #666; font-size: 16px; line-height: 1.6;">
-                                We've received your order and payment has been verified successfully! Your EchoKit device will be shipped to the address below.
+                                Your payment has been verified successfully. You can now access the x402 whitepaper using the link below.
                             </p>
 
                             <!-- Order Summary -->
@@ -68,7 +68,7 @@
                                 </tr>
                                 <tr>
                                     <td style="padding: 12px 20px; color: #666; font-size: 14px; width: 40%;">Product</td>
-                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500;">EchoKit Device</td>
+                                    <td style="padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500;">{{ product.name }}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 12px 20px; color: #666; font-size: 14px; background-color: #ffffff;">Quantity</td>
@@ -82,28 +82,8 @@
                                 </tr>
                             </table>
 
-                            <!-- Shipping Address -->
-                            <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
-                                <tr>
-                                    <td style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0;">
-                                        <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Shipping Address</h3>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 15px 20px;">
-                                        <p style="margin: 0 0 5px 0; color: #333; font-size: 14px; font-weight: 500;">{{ name }}</p>
-                                        <p style="margin: 0 0 5px 0; color: #666; font-size: 14px; line-height: 1.5;">{{ address1 }}</p>
-                                        {% if address2 %}
-                                        <p style="margin: 0 0 5px 0; color: #666; font-size: 14px; line-height: 1.5;">{{ address2 }}</p>
-                                        {% endif %}
-                                        <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.5;">{{ state }}, {{ zip }}</p>
-                                        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px; line-height: 1.5;">{{ country }}</p>
-                                    </td>
-                                </tr>
-                            </table>
-
                             <!-- Contact Info -->
-                            {% if phone or email %}
+                            {% if email %}
                             <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
                                 <tr>
                                     <td style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0;">
@@ -112,12 +92,7 @@
                                 </tr>
                                 <tr>
                                     <td style="padding: 15px 20px;">
-                                        {% if email %}
-                                        <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;"><strong>Email:</strong> {{ email }}</p>
-                                        {% endif %}
-                                        {% if phone %}
-                                        <p style="margin: 0; color: #666; font-size: 14px;"><strong>Phone:</strong> {{ phone }}</p>
-                                        {% endif %}
+                                        <p style="margin: 0; color: #666; font-size: 14px;"><strong>Email:</strong> {{ email }}</p>
                                     </td>
                                 </tr>
                             </table>
@@ -125,10 +100,11 @@
 
                             <!-- Next Steps -->
                             <div style="margin-top: 30px; padding: 20px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
-                                <h3 style="margin: 0 0 10px 0; color: #1976d2; font-size: 16px; font-weight: 600;">What's Next?</h3>
-                                <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6;">
-                                    We'll process your order and send you a shipping confirmation with tracking information within 1-2 business days.
+                                <h3 style="margin: 0 0 10px 0; color: #1976d2; font-size: 16px; font-weight: 600;">Access your purchased content</h3>
+                                <p style="margin: 0 0 15px 0; color: #555; font-size: 14px; line-height: 1.6;">
+                                    [Special Lecture by KII Director Ha Tae-kyung] Expanding Job Opportunities through AI-based Projects
                                 </p>
+                                <a href="https://www.youtube.com/watch?v=uO9PzoYXfYY" style="display: inline-block; padding: 12px 24px; background-color: #667eea; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Video with English subtitles</a>
                             </div>
                         </td>
                     </tr>

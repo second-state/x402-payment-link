@@ -10,9 +10,9 @@ echokit_diy:
     shipping: 4.99
 
 demo:
-  name: x402 labs demo
-  description: "Pay to get the x402 whitepaper!"
-  image: https://www.x402.org/_next/image?url=%2Fx402-logo.png&w=640&q=75
+  name: KII video on AI opportunities
+  description: "Pay to watch an KII video - Expanding Job Opportunities through AI-based Projects"
+  image: https://pay.x402labs.dev/static/kii.jpg
   staging:
     price: 0.1
     shipping: 0
