@@ -10,7 +10,7 @@ echokit_diy:
     shipping: 4.99
 
 demo:
-  name: x402 labs demo
+  name: KII video on AI opportunities
   description: "Pay to watch an KII video - Expanding Job Opportunities through AI-based Projects"
   image: https://pay.x402labs.dev/static/kii.jpg
   staging:
