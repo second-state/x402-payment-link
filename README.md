@@ -15,7 +15,7 @@ A Flask-based payment page demo implementing the [x402 protocol](https://www.x40
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd x402-mvp
+cd x402-payment-link
 
 # Install dependencies
 uv sync
@@ -67,15 +67,6 @@ Create a `.env` file in the project root. See `.env.example` for a template.
 | `FACILITATOR_URL` | `https://x402f1.secondstate.io` | x402 facilitator service URL |
 | `APP_NAME` | `x402-mvp` | Application name shown in paywall |
 | `APP_LOGO` | `/static/secondstate.png` | Logo URL for paywall |
-
-### Production (Mainnet)
-
-For mainnet deployments, register at the [Coinbase Developer Portal](https://portal.cdp.coinbase.com/) and add:
-
-| Variable | Description |
-|----------|-------------|
-| `CDP_API_KEY_ID` | Coinbase Developer Platform API Key ID |
-| `CDP_API_KEY_SECRET` | Coinbase Developer Platform API Key Secret |
 
 ### Email Notifications (Optional)
 
