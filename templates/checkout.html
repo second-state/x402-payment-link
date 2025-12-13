@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ primary_product.name }}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f6f9fc; color: #32325d; line-height: 1.6; min-height: 100vh; padding: 20px; }
+    .container { max-width: 1000px; width: 100%; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); overflow: hidden; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; }
+    .header { padding: 32px; border-right: 1px solid #e6ebf1; display: flex; flex-direction: column; gap: 16px; }
+    .product-info { display: flex; flex-direction: column; gap: 16px; }
+    .product-image { width: 120px; height: 120px; background: #f0f0f0; border-radius: 8px; overflow: hidden; border: 1px solid #e6ebf1; flex-shrink: 0; }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .product-title { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .product-desc { font-size: 13px; color: #6b7c93; line-height: 1.5; }
+    .price-breakdown { background: #f6f9fc; border-radius: 8px; padding: 16px; border: 1px solid #e6ebf1; }
+    .price-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 14px; color: #32325d; }
+    .price-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px solid #e6ebf1; font-weight: 600; font-size: 16px; }
+    .price-row-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .quantity-control { display: inline-flex; align-items: center; gap: 4px; background: white; border: 1px solid #d1d5db; border-radius: 999px; padding: 4px 8px; }
+    .quantity-button { border: none; background: transparent; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; color: #4b5563; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+    .quantity-button:hover { background: #edf2ff; color: #4f46e5; }
+    .quantity-input { width: 48px; border: none; background: transparent; text-align: center; font-size: 16px; font-weight: 500; }
+    .quantity-input:focus { outline: none; }
+    .form-container { padding: 32px; }
+    .section-title { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 14px; font-weight: 500; color: #32325d; margin-bottom: 8px; }
+    input { width: 100%; padding: 12px 14px; font-size: 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; }
+    input:focus { outline: none; border-color: #635bff; box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1); }
+    .address-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .button { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; color: white; background: #635bff; border: none; border-radius: 6px; cursor: pointer; transition: all 0.15s ease; margin-top: 10px; }
+    .button:hover { background: #5145e4; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(99, 91, 255, 0.3); }
+    .button:disabled { background: #aab7c4; cursor: not-allowed; transform: none; }
+    .secure { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: #6b7c93; margin-top: 20px; }
+    .lock-icon { width: 14px; height: 14px; }
+    .error-message { color: #df1b41; font-size: 12px; margin-top: 4px; display: none; }
+    .input-error { border-color: #df1b41 !important; }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; } .header { border-right: none; border-bottom: 1px solid #e6ebf1; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="product-info" style="flex-direction:column;">
+        {% for p in products %}
+        <div style="display:flex;gap:12px;min-width:220px;align-items:flex-start;">
+          <div class="product-image">
+            {% if p.image %}
+            <img src="{{ p.image }}" alt="{{ p.name }}" />
+            {% else %}
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px;">No image</div>
+            {% endif %}
+          </div>
+          <div>
+            <div class="product-title">{{ p.name }}</div>
+            <div class="product-desc">{{ p.description or 'No description provided.' }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="price-breakdown">
+        <div class="price-row">
+          <div class="price-row-left">
+            <span>Items</span>
+            <div class="quantity-control" aria-label="Select quantity">
+              <button type="button" class="quantity-button" id="quantityDecrease" aria-label="Decrease quantity">-</button>
+              <input
+                type="text"
+                id="quantityInput"
+                name="quantity"
+                class="quantity-input"
+                value="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              >
+              <button type="button" class="quantity-button" id="quantityIncrease" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+          <span id="itemsTotal">{{ currency }} {{ '%.2f'|format(price_total) }}</span>
+        </div>
+        <div class="price-row"><span>Shipping</span><span id="shippingTotal">{{ currency }} {{ '%.2f'|format(shipping_total) }}</span></div>
+        <div class="price-row"><span>Total</span><span id="orderTotal">{{ currency }} {{ '%.2f'|format(grand_total) }}</span></div>
+      </div>
+    </div>
+    <div class="form-container">
+      <div class="section-title">Order Information</div>
+      <form action="/{{ link_slug }}/order" method="POST">
+        <input type="hidden" name="quantity" id="quantityHidden" value="1" />
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required />
+          <div class="error-message" id="emailError">Please enter a valid email.</div>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" />
+          <div class="error-message" id="phoneError">Please enter a valid phone number.</div>
+        </div>
+        <div class="form-group">
+          <label for="fullName">Full name</label>
+          <input type="text" id="fullName" name="fullName" placeholder="John Smith" />
+          <div class="error-message" id="fullNameError">Please enter your name.</div>
+        </div>
+        <div class="form-group">
+          <label for="address1">Address line 1</label>
+          <input type="text" id="address1" name="address1" placeholder="123 Main Street" />
+          <div class="error-message" id="address1Error">Please enter your address.</div>
+        </div>
+        <div class="form-group">
+          <label for="address2">Address line 2 (optional)</label>
+          <input type="text" id="address2" name="address2" placeholder="Apartment, suite, etc." />
+        </div>
+        <div class="form-group address-grid">
+          <div>
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" placeholder="San Francisco" />
+            <div class="error-message" id="cityError">City is required.</div>
+          </div>
+          <div>
+            <label for="state">State / Province</label>
+            <input type="text" id="state" name="state" placeholder="CA" />
+            <div class="error-message" id="stateError">State is required.</div>
+          </div>
+          <div>
+            <label for="zip">ZIP / Postal code</label>
+            <input type="text" id="zip" name="zip" placeholder="94102" />
+            <div class="error-message" id="zipError">ZIP is required.</div>
+          </div>
+          <div>
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country" placeholder="USA" />
+            <div class="error-message" id="countryError">Country is required.</div>
+          </div>
+        </div>
+        <button type="submit" class="button" id="payButton">Pay {{ currency }} {{ '%.2f'|format(grand_total) }}</button>
+        <div class="secure">
+	  <svg class="lock-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+          </svg>
+	  Secure checkout powered by x402 labs
+	</div>
+      </form>
+    </div>
+  </div>
+    <script>
+    (function() {
+      const qtyInput = document.getElementById("quantityInput");
+      const qtyHidden = document.getElementById("quantityHidden");
+      const decBtn = document.getElementById("quantityDecrease");
+      const incBtn = document.getElementById("quantityIncrease");
+      const orderTotalEl = document.getElementById("orderTotal");
+      const itemsTotalEl = document.getElementById("itemsTotal");
+      const payBtn = document.getElementById("payButton");
+      const form = document.querySelector("form");
+      const priceTotal = {{ '%.2f'|format(price_total) }};
+      const shippingTotal = {{ '%.2f'|format(shipping_total) }};
+      const currency = "{{ currency }}";
+
+      function sanitizeQuantity(value) {
+        const numeric = parseInt(value, 10);
+        return Number.isNaN(numeric) || numeric < 1 ? 1 : numeric;
+      }
+
+      function updateTotals(value) {
+        const qty = sanitizeQuantity(value ?? qtyInput.value);
+        qtyInput.value = qty;
+        if (qtyHidden) qtyHidden.value = qty;
+        const itemsTotal = qty * priceTotal;
+        const grandTotal = itemsTotal + shippingTotal;
+        itemsTotalEl.textContent = `${currency} ${itemsTotal.toFixed(2)}`;
+        orderTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
+        payBtn.textContent = `Pay ${currency} ${grandTotal.toFixed(2)}`;
+      }
+
+      decBtn?.addEventListener("click", () => updateTotals(sanitizeQuantity(qtyInput.value) - 1));
+      incBtn?.addEventListener("click", () => updateTotals(sanitizeQuantity(qtyInput.value) + 1));
+      qtyInput?.addEventListener("input", () => {
+        qtyInput.value = qtyInput.value.replace(/\D/g, "");
+      });
+      qtyInput?.addEventListener("blur", () => updateTotals(qtyInput.value));
+      updateTotals(qtyInput?.value || "1");
+
+      function clearErrors() {
+        document.querySelectorAll(".error-message").forEach((el) => (el.style.display = "none"));
+        document.querySelectorAll(".input-error").forEach((el) => el.classList.remove("input-error"));
+      }
+
+      function showError(id) {
+        const msg = document.getElementById(id + "Error");
+        const input = document.getElementById(id);
+        if (msg) msg.style.display = "block";
+        if (input) input.classList.add("input-error");
+      }
+
+      function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      form?.addEventListener("submit", (e) => {
+        clearErrors();
+        let valid = true;
+        if (!validateEmail(document.getElementById("email").value || "")) {
+          showError("email");
+          valid = false;
+        }
+        const phone = (document.getElementById("phone").value || "").replace(/\D/g, "");
+        if (phone && (phone.length < 7 || phone.length > 15)) {
+          showError("phone");
+          valid = false;
+        }
+        ["fullName", "address1", "city", "state", "zip", "country"].forEach((id) => {
+          const v = (document.getElementById(id).value || "").trim();
+          if (!v) {
+            showError(id);
+            valid = false;
+          }
+        });
+        if (!valid) {
+          e.preventDefault();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

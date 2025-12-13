@@ -24,28 +24,29 @@ docker compose up --build
 Copy `.env.example` to `.env` and configure:
 - `NETWORK`: `base-sepolia` (testnet) or `base` (mainnet)
 - `ADDRESS`: Wallet address for receiving USDC payments
+- `LINK_API_BASE`: Base URL for the `x402-payment-link` dashboard API
+- `LINK_API_KEY`: API key for dashboard access (if required)
 - For production: `CDP_API_KEY_ID` and `CDP_API_KEY_SECRET` from Coinbase Developer Portal
 - Optional: SendGrid email settings for order confirmations
 
 ## Architecture
 
 ### Request Flow
-1. User browses products at `/<product>` (renders product page)
-2. Order form submits to `/<product>/order` (creates order, redirects to payment)
-3. Payment page at `/<product>/order/<order_id>` handles x402 protocol:
+1. User visits `/<link_code>`; the app fetches link + product data from `LINK_API_BASE`
+2. Order form submits to `/<link_code>/order` (creates order, redirects to payment)
+3. Payment page at `/<link_code>/order/<order_id>` handles x402 protocol:
    - Returns 402 with payment requirements if no `X-PAYMENT` header
    - Verifies and settles payment via facilitator if header present
    - Renders confirmation page on success
 
 ### Service Layer (`services/`)
-- `product_service.py`: Reads product catalog from `products.yaml`
+- `product_service.py`: Fetches link + product data from the dashboard API
 - `order_service.py`: Persists orders as JSON lines in `data/<product>.txt`
 - `payment_service.py`: x402 payment verification/settlement logic
 - `notification_service.py`: SendGrid email notifications
 
 ### Configuration
-- `config.py`: Loads environment variables, creates facilitator config
-- `products.yaml`: Product catalog with environment-specific pricing (staging/production)
+- `config.py`: Loads environment variables, creates facilitator config (uses LINK_API_BASE/KEY)
 
 ### Key Dependencies
 - `x402`: Protocol implementation (from Coinbase x402 repo)
@@ -54,8 +55,4 @@ Copy `.env.example` to `.env` and configure:
 
 ## Adding New Products
 
-1. Add entry to `products.yaml` with name, description, image, and pricing per environment
-2. Create templates in `templates/<product_id>/`:
-   - `product.html`: Product landing page
-   - `order_confirmation.html`: Post-payment confirmation
-   - `order_confirmation_email.html`: Email template (optional)
+Create products and links in `x402-payment-link`, then use the generated link codes here. Templates are generic (`checkout.html`, `order_confirmation.html`, `order_confirmation_email.html`); no per-product template work is needed.

@@ -52,7 +52,11 @@ def get_order_by_id(product, order_id):
         Order dictionary or None if not found
     """
     orders = get_orders(product)
-    return next((order for order in orders if order.get("order_id") == order_id), None)
+    # Prefer the latest occurrence (in case older entries exist)
+    for order in reversed(orders):
+        if order.get("order_id") == order_id:
+            return order
+    return None
 
 
 def save_product_order(product, data):
@@ -62,5 +66,13 @@ def save_product_order(product, data):
         product: Product identifier
         data: Order data dictionary
     """
-    with open(f"{ORDER_DIR}/{product}.txt", "a") as f:
-        f.write(f"{json.dumps(data)}\n")
+    filepath = f"{ORDER_DIR}/{product}.txt"
+
+    # Load existing orders and replace the one with the same ID (if any)
+    existing = get_orders(product)
+    updated_orders = [o for o in existing if o.get("order_id") != data.get("order_id")]
+    updated_orders.append(data)
+
+    with open(filepath, "w") as f:
+        for order in updated_orders:
+            f.write(f"{json.dumps(order)}\n")

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmation</title>
+</head>
+<body style="font-family: Arial, sans-serif; color:#111827;">
+  <h2 style="margin-bottom:8px;">Thank you for your purchase!</h2>
+  <p style="margin:0 0 8px 0;">Order ID: <code>{{ order_id }}</code></p>
+  <p style="margin:0 0 8px 0;">Product: <strong>{{ product.name }}</strong></p>
+  <p style="margin:0 0 8px 0;">Quantity: {{ quantity }}</p>
+  <p style="margin:0 0 8px 0;">Total: ${{ '%.2f'|format(total) }}</p>
+  {% if tx_hash %}
+    <p style="margin:0 0 8px 0;">Transaction: <code>{{ tx_hash }}</code></p>
+    {% if tx_link %}
+      <p style="margin:0 0 8px 0;">Explorer: <a href="{{ tx_link }}">View</a></p>
+    {% endif %}
+  {% endif %}
+</body>
+</html>

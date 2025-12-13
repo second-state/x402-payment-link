@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmation</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f6f9fc; color: #111827; padding: 24px; }
+    .card { max-width: 560px; margin: 0 auto; background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .muted { color: #6b7280; font-size: 14px; margin-bottom: 16px; }
+    .row { margin-bottom: 12px; }
+    .mono { font-family: monospace; font-size: 13px; }
+    a { color: #2563eb; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title">Payment complete</div>
+    <div class="muted">Order ID: <span class="mono">{{ order_id }}</span></div>
+    {% if tx_hash %}
+    <div class="row">Transaction hash: <span class="mono">{{ tx_hash }}</span></div>
+    {% if tx_link %}
+    <div class="row"><a href="{{ tx_link }}" target="_blank" rel="noreferrer">View on explorer</a></div>
+    {% endif %}
+    {% else %}
+    <div class="row">No transaction hash was returned.</div>
+    {% endif %}
+  </div>
+</body>
+</html>

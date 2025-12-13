@@ -1,6 +1,6 @@
 # x402 Payment Page Demo
 
-A Flask-based payment page demo implementing the [x402 protocol](https://www.x402.org/) for USDC cryptocurrency payments on the Base chain. Uses the Coinbase facilitator for payment verification and settlement.
+A Flask-based payment page demo implementing the [x402 protocol](https://www.x402.org/) for USDC cryptocurrency payments on the Base chain. Product and link data now come from the `x402-payment-link` Next.js service (no local YAML or per-product templates). Uses the Coinbase facilitator for payment verification and settlement.
 
 ## Quick Start
 
@@ -13,16 +13,12 @@ A Flask-based payment page demo implementing the [x402 protocol](https://www.x40
 ### Installation
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd x402-payment-link
-
 # Install dependencies
 uv sync
 
 # Copy environment template and configure
 cp .env.example .env
-# Edit .env with your wallet address
+# Edit .env with your wallet address and dashboard API info
 ```
 
 ### Run Locally
@@ -41,10 +37,11 @@ docker compose up --build
 
 ### Test the Payment Flow
 
-1. Open `http://localhost:5000/demo` in your browser
-2. Fill out the order form and submit
-3. The payment page returns a 402 status with payment requirements
-4. Use an x402-compatible wallet to complete the payment
+1. Create a link and products in `x402-payment-link`, then note the link code.
+2. Open `http://localhost:5000/<link_code>` in your browser.
+3. Fill out the order form and submit.
+4. The payment page returns a 402 status with payment requirements.
+5. Use an x402-compatible wallet to complete the payment.
 
 ## Configuration
 
@@ -56,17 +53,20 @@ Create a `.env` file in the project root. See `.env.example` for a template.
 |----------|-------------|---------|
 | `ADDRESS` | Wallet address for receiving USDC payments | `0xYourBaseWalletAddress` |
 | `NETWORK` | Blockchain network | `base-sepolia` (testnet) or `base` (mainnet) |
+| `LINK_API_BASE` | Base URL for the dashboard API | `http://localhost:3000` |
+| `LINK_API_KEY` | API key for the dashboard (if required) | `sk_live_...` |
 
 ### Optional Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `APP_PORT` | `5000` | Server port |
-| `ENVIRONMENT` | `staging` | Affects product pricing (`staging` or `production`) |
 | `MAX_DEADLINE_SECONDS` | `60` | Payment timeout in seconds |
 | `FACILITATOR_URL` | `https://x402f1.secondstate.io` | x402 facilitator service URL |
 | `APP_NAME` | `x402-mvp` | Application name shown in paywall |
 | `APP_LOGO` | `/static/secondstate.png` | Logo URL for paywall |
+| `LINK_API_TIMEOUT` | `5` | Timeout (seconds) for dashboard API calls |
+| `DEBUG` | `false` | Enable Flask debug mode |
 
 ### Email Notifications (Optional)
 
@@ -91,9 +91,9 @@ The x402 protocol enables HTTP-native cryptocurrency payments using the `402 Pay
 └──────────┘     └──────────────┘     └─────────────┘     └─────────────┘
 ```
 
-1. **Browse Product** (`GET /<product>`) - User views product page with pricing
-2. **Submit Order** (`POST /<product>/order`) - Order details saved, redirects to payment
-3. **Payment Required** (`GET /<product>/order/<order_id>`) - Returns 402 with payment requirements if no `X-PAYMENT` header
+1. **Browse Product** (`GET /<link_code>`) - User views product page with pricing fetched from `x402-payment-link`
+2. **Submit Order** (`POST /<link_code>/order`) - Order details saved, redirects to payment
+3. **Payment Required** (`GET /<link_code>/order/<order_id>`) - Returns 402 with payment requirements if no `X-PAYMENT` header
 4. **Settlement** - Client sends payment via `X-PAYMENT` header; facilitator verifies and settles on blockchain
 5. **Confirmation** - Success page displayed with transaction link; email sent if configured
 
@@ -102,44 +102,24 @@ The x402 protocol enables HTTP-native cryptocurrency payments using the `402 Pay
 ```
 ├── main.py              # Flask application entry point
 ├── config.py            # Environment configuration
-├── products.yaml        # Product catalog
 ├── services/
-│   ├── product_service.py     # Product catalog management
+│   ├── product_service.py     # Fetches links/products from dashboard API
 │   ├── order_service.py       # Order persistence (JSONL)
 │   ├── payment_service.py     # x402 payment verification/settlement
 │   └── notification_service.py # SendGrid email notifications
 ├── templates/
-│   └── <product_id>/
-│       ├── product.html               # Product landing page
-│       ├── order_confirmation.html    # Success page
-│       └── order_confirmation_email.html  # Email template
+│   ├── checkout.html               # Generic checkout page (API-driven)
+│   ├── order_confirmation.html     # Post-payment success page
+│   └── order_confirmation_email.html # Email template for confirmations
 ├── static/              # Static assets (images, etc.)
 ├── data/                # Runtime data (orders, logs)
 ├── Dockerfile
 └── docker-compose.yaml
 ```
 
-## Adding New Products
+## Adding Products
 
-1. Add an entry to `products.yaml`:
-
-```yaml
-my_product:
-  name: My Product
-  description: "Product description here"
-  image: https://example.com/image.png
-  staging:
-    price: 0.10
-    shipping: 0.00
-  production:
-    price: 29.99
-    shipping: 4.99
-```
-
-2. Create templates in `templates/my_product/`:
-   - `product.html` - Product landing page with order form
-   - `order_confirmation.html` - Post-payment success page
-   - `order_confirmation_email.html` - Email template (optional)
+Create products and links in `x402-payment-link` and use the generated link codes here. No local YAML or per-product templates are needed.
 
 ## Docker Deployment
 
@@ -171,7 +151,7 @@ services:
 
 | Service | Purpose |
 |---------|---------|
-| `product_service` | Reads product catalog from `products.yaml` |
+| `product_service` | Fetches link/product data from `LINK_API_BASE` (with optional `LINK_API_KEY`) |
 | `order_service` | Generates order IDs, stores orders as JSONL in `data/` |
 | `payment_service` | Creates payment requirements, verifies/settles via facilitator |
 | `notification_service` | Sends confirmation emails via SendGrid |
@@ -179,9 +159,8 @@ services:
 ### Testing on Testnet
 
 1. Set `NETWORK=base-sepolia` in `.env`
-2. Set `ENVIRONMENT=staging` for lower test prices ($0.10)
-3. Use a testnet wallet with Sepolia USDC
-4. No Coinbase API keys required for testnet
+2. Use a testnet wallet with Sepolia USDC
+3. No Coinbase API keys required for testnet
 
 ### Order Storage
 

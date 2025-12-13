@@ -12,7 +12,6 @@ load_dotenv()
 
 # Application settings
 APP_PORT = int(os.getenv("APP_PORT", "5000"))
-ENVIRONMENT = os.getenv("ENVIRONMENT", "staging")
 ORDER_DIR = "data"
 
 # Network settings

@@ -12,7 +12,7 @@ from x402.paywall import get_paywall_html, is_browser_request
 from x402.types import x402PaymentRequiredResponse
 
 # Import configuration
-from config import (ADDRESS, APP_PORT, ENVIRONMENT, FACILITATOR_CONFIG,
+from config import (ADDRESS, APP_PORT, DEBUG_MODE, FACILITATOR_CONFIG,
                     FROM_EMAIL, MAX_DEADLINE_SECONDS, NETWORK,
                     ORDER_CONFIRMATION_RECIPIENT, PAYWALL_CONFIG,
                     SENDGRID_API_KEY)
@@ -24,7 +24,7 @@ from services.payment_service import (create_payment_requirements,
                                       generate_transaction_link,
                                       parse_payment_header, settle_payment,
                                       verify_payment)
-from services.product_service import get_product_config, get_products
+from services.product_service import get_link_config
 
 app = Flask(__name__)
 
@@ -56,7 +56,7 @@ def x402_response(error, payment_requirements):
         html_content = get_paywall_html(
             error, payment_requirements, PAYWALL_CONFIG
         )
-        return html_content, 400
+        return html_content, 402
     else:
         response_data = x402PaymentRequiredResponse(
             x402_version=x402_VERSION,
@@ -64,7 +64,7 @@ def x402_response(error, payment_requirements):
             error=error,
         ).model_dump(by_alias=True)
 
-        return response_data, 400
+        return response_data, 402
 
 
 @app.after_request
@@ -75,11 +75,7 @@ def add_security_headers(response):
 
 @app.route("/")
 def index():
-    html = ''
-    products = get_products()
-    for product in products:
-        html += f'<li><a href="/{product}">{product}</a></li>'
-    return html
+    return "OK", 200
 
 
 @app.route('/static/<path:filename>')
@@ -87,19 +83,34 @@ def serve_static(filename):
     return send_from_directory('static', filename)
 
 
-@app.route("/<product>")
-def product_page(product):
-    product_config = get_product_config(product, ENVIRONMENT)
-    if not product_config:
-        return "Not found", 404
-    return render_template(f"{product}/product.html", product=product_config)
+@app.route("/<link>")
+def product_page(link):
+    link_config = get_link_config(link)
+    if not link_config:
+        return "Link not found or unavailable", 503
+    products = link_config["products"]
+    price_total = sum(p.get("price", 0) for p in products)
+    shipping_total = sum(p.get("shipping", 0) for p in products)
+    grand_total = price_total + shipping_total
+    currency = products[0].get("currency", "USD")
+    return render_template(
+        "checkout.html",
+        products=products,
+        primary_product=products[0],
+        price_total=price_total,
+        shipping_total=shipping_total,
+        grand_total=grand_total,
+        currency=currency,
+        link_slug=link,
+    )
 
 
-@app.route("/<product>/order", methods=["POST"])
-def product_order(product):
-    product_config = get_product_config(product, ENVIRONMENT)
-    if not product_config:
-        return "Not found", 404
+@app.route("/<link>/order", methods=["POST"])
+def product_order(link):
+    link_config = get_link_config(link)
+    if not link_config:
+        return "Link not found or unavailable", 503
+    products = link_config["products"]
 
     timestamp = time.time()
     email = request.form.get("email")
@@ -112,8 +123,9 @@ def product_order(product):
     country = request.form.get("country")
     order_id = generate_order_id()
     quantity = int(request.form.get("quantity", 1))
-    total = round(
-        quantity * product_config["price"] + product_config["shipping"], 2)
+    price_total = sum(p.get("price", 0) for p in products)
+    shipping_total = sum(p.get("shipping", 0) for p in products)
+    total = round(quantity * price_total + shipping_total, 2)
 
     data = {
         "time": timestamp,
@@ -130,21 +142,36 @@ def product_order(product):
         "total": total,
         "payment": False,
     }
-    save_product_order(product, data)
-    return redirect(f"/{product}/order/{order_id}")
+    save_product_order(link, data)
+    return redirect(f"/{link}/order/{order_id}")
 
 
-@app.route("/<product>/order/<order_id>")
-async def product_order_id(product, order_id):
+@app.route("/<link>/order/<order_id>")
+async def product_order_id(link, order_id):
     """Handle order payment verification and settlement (async)."""
     # Get order and product details
-    order = get_order_by_id(product, order_id)
+    order = get_order_by_id(link, order_id)
     if not order:
         return "Not found", 404
 
-    product_config = get_product_config(product, ENVIRONMENT)
-    if not product_config:
-        return "Not found", 404
+    link_config = get_link_config(link)
+    if not link_config:
+        return "Link not found or unavailable", 503
+    products = link_config["products"]
+    product_config = products[0]  # primary product for description/receipt
+
+    # If already paid, render confirmation immediately
+    if order.get("payment"):
+        tx_hash = order.get("tx_hash")
+        tx_link = generate_transaction_link(
+            tx_hash, order.get("tx_network") or link_config.get("network", NETWORK)
+        )
+        return render_template(
+            "order_confirmation.html",
+            order_id=order_id,
+            tx_hash=tx_hash,
+            tx_link=tx_link,
+        )
 
     # Create payment requirements
     payment_requirements = create_payment_requirements(
@@ -152,8 +179,8 @@ async def product_order_id(product, order_id):
         order=order,
         order_id=order_id,
         resource_url=request.url,
-        network=NETWORK,
-        pay_to_address=ADDRESS,
+        network=link_config.get("network", NETWORK),
+        pay_to_address=link_config.get("pay_to_address", ADDRESS),
         max_timeout_seconds=MAX_DEADLINE_SECONDS
     )
 
@@ -202,14 +229,16 @@ async def product_order_id(product, order_id):
     # Update order as paid
     order["time"] = time.time()
     order["payment"] = True
-    save_product_order(product, order)
+    order["tx_hash"] = tx_hash
+    order["tx_network"] = tx_network
+    save_product_order(link, order)
 
     # Send order confirmation email
     if order.get("email") and ORDER_CONFIRMATION_RECIPIENT and SENDGRID_API_KEY:
         send_order_confirmation_email(
             order=order,
             product_config=product_config,
-            product=product,
+            product=link,
             order_id=order_id,
             tx_hash=tx_hash,
             tx_link=tx_link,
@@ -219,7 +248,7 @@ async def product_order_id(product, order_id):
         )
 
     return render_template(
-        f"{product}/order_confirmation.html",
+        "order_confirmation.html",
         order_id=order_id,
         tx_hash=tx_hash,
         tx_link=tx_link
@@ -227,4 +256,4 @@ async def product_order_id(product, order_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=APP_PORT, debug=(ENVIRONMENT == 'staging'))
+    app.run(host="0.0.0.0", port=APP_PORT, debug=DEBUG_MODE)

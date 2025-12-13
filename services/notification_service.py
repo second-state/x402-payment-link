@@ -46,7 +46,7 @@ def send_order_confirmation_email(
         subject = f"Order Confirmation - {order_id}"
 
         html_content = render_template(
-            f"{product}/order_confirmation_email.html",
+            "order_confirmation_email.html",
             order_id=order_id,
             name=order.get("name", "Customer"),
             email=order.get("email"),
