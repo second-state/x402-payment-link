@@ -89,6 +89,7 @@ def product_page(link):
     if not link_config:
         return "Link not found or unavailable", 503
     products = link_config["products"]
+    require_shipping = link_config.get("require_shipping", True)
     price_total = sum(p.get("price", 0) for p in products)
     shipping_total = sum(p.get("shipping", 0) for p in products)
     grand_total = price_total + shipping_total
@@ -102,6 +103,7 @@ def product_page(link):
         grand_total=grand_total,
         currency=currency,
         link_slug=link,
+        require_shipping=require_shipping,
     )
 
 
@@ -111,6 +113,7 @@ def product_order(link):
     if not link_config:
         return "Link not found or unavailable", 503
     products = link_config["products"]
+    require_shipping = link_config.get("require_shipping", True)
 
     timestamp = time.time()
     email = request.form.get("email")
@@ -141,6 +144,7 @@ def product_order(link):
         "quantity": quantity,
         "total": total,
         "payment": False,
+        "require_shipping": require_shipping,
     }
     save_product_order(link, data)
     return redirect(f"/{link}/order/{order_id}")

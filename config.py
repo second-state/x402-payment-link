@@ -13,6 +13,7 @@ load_dotenv()
 # Application settings
 APP_PORT = int(os.getenv("APP_PORT", "5000"))
 ORDER_DIR = "data"
+DEBUG_MODE = os.getenv("DEBUG", "false").lower() == "true"
 
 # Network settings
 NETWORK = os.getenv("NETWORK", "base-sepolia")

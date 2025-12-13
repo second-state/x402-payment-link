@@ -65,4 +65,5 @@ def get_link_config(link_code: str, _environment: Optional[str] = None) -> Optio
         "products": products,
         "network": link.get("network"),
         "pay_to_address": link.get("payToAddress"),
+        "require_shipping": bool(link.get("requireShipping", True)),
     }
