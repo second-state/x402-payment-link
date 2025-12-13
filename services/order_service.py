@@ -1,78 +1,87 @@
-"""Order management service for handling order persistence and retrieval."""
+"""Order management service for handling order persistence and retrieval via dashboard API."""
 
-import json
+import logging
+import os
 import secrets
 import string
+from typing import Optional
+
+import requests
+from requests import exceptions as req_exc
+
+API_BASE = os.getenv("LINK_API_BASE", "http://localhost:3000")
+API_KEY = os.getenv("LINK_API_KEY")
+API_TIMEOUT = float(os.getenv("LINK_API_TIMEOUT", "15"))
+
+logger = logging.getLogger(__name__)
 
 
-ORDER_DIR = "data"
+def _auth_headers() -> dict:
+    if not API_KEY:
+        return {}
+    return {"Authorization": f"Bearer {API_KEY}"}
 
 
 def generate_order_id(length=12):
-    """Generate a random order ID.
-
-    Args:
-        length: Length of the order ID (default: 12)
-
-    Returns:
-        Random alphanumeric string in uppercase
-    """
+    """Generate a random order ID (uppercase alphanumeric)."""
     chars = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(chars) for _ in range(length))
 
 
-def get_orders(product):
-    """Get all orders for a product.
+def _normalize_order(order: dict) -> dict:
+    """Normalize order keys from API into the snake_case we expect internally."""
+    return {
+        **order,
+        "order_id": order.get("orderId"),
+        "require_shipping": order.get("requireShipping"),
+        "tx_hash": order.get("txHash"),
+        "tx_network": order.get("txNetwork"),
+        "total": float(order.get("total", 0)) if order.get("total") is not None else None,
+    }
 
-    Args:
-        product: Product identifier
 
-    Returns:
-        List of order dictionaries
-    """
-    filepath = f"{ORDER_DIR}/{product}.txt"
+def create_or_update_order(payload: dict) -> Optional[dict]:
+    """Create or update an order in the dashboard via API."""
+    url = f"{API_BASE}/api/orders"
     try:
-        with open(filepath, "r") as f:
-            return [json.loads(line) for line in f.readlines()]
-    except FileNotFoundError:
-        # Create a new file if not exists
-        with open(filepath, "w") as f:
-            pass
-        return []
+        resp = requests.post(url, json=payload, headers=_auth_headers(), timeout=API_TIMEOUT)
+        if not resp.ok:
+            logger.error("Order create/update failed (%s): %s %s", payload.get("orderId"), resp.status_code, resp.text)
+            return None
+        order = resp.json().get("order")
+        return _normalize_order(order) if order else None
+    except req_exc.RequestException as exc:
+        logger.error("Order create/update error (%s): %s", payload.get("orderId"), exc)
+        return None
 
 
-def get_order_by_id(product, order_id):
-    """Get a specific order by ID.
+def get_order_by_id(order_id: str) -> Optional[dict]:
+    """Fetch an order by ID from the dashboard API."""
+    url = f"{API_BASE}/api/orders/{order_id}"
+    try:
+        resp = requests.get(url, headers=_auth_headers(), timeout=API_TIMEOUT)
+        if resp.status_code == 404:
+            return None
+        if not resp.ok:
+            logger.error("Order fetch failed (%s): %s %s", order_id, resp.status_code, resp.text)
+            return None
+        order = resp.json().get("order")
+        return _normalize_order(order) if order else None
+    except req_exc.RequestException as exc:
+        logger.error("Order fetch error (%s): %s", order_id, exc)
+        return None
 
-    Args:
-        product: Product identifier
-        order_id: Order ID to find
 
-    Returns:
-        Order dictionary or None if not found
-    """
-    orders = get_orders(product)
-    # Prefer the latest occurrence (in case older entries exist)
-    for order in reversed(orders):
-        if order.get("order_id") == order_id:
-            return order
-    return None
-
-
-def save_product_order(product, data):
-    """Save an order to the product's order file.
-
-    Args:
-        product: Product identifier
-        data: Order data dictionary
-    """
-    filepath = f"{ORDER_DIR}/{product}.txt"
-
-    # Load existing orders and replace the one with the same ID (if any)
-    existing = get_orders(product)
-    updated_orders = [o for o in existing if o.get("order_id") != data.get("order_id")]
-    updated_orders.append(data)
-
-    with open(filepath, "w") as f:
-        for order in updated_orders:
-            f.write(f"{json.dumps(order)}\n")
+def update_order(order_id: str, payload: dict) -> Optional[dict]:
+    """Update an order by ID via the dashboard API."""
+    url = f"{API_BASE}/api/orders/{order_id}"
+    try:
+        resp = requests.put(url, json=payload, headers=_auth_headers(), timeout=API_TIMEOUT)
+        if not resp.ok:
+            logger.error("Order update failed (%s): %s %s", order_id, resp.status_code, resp.text)
+            return None
+        order = resp.json().get("order")
+        return _normalize_order(order) if order else None
+    except req_exc.RequestException as exc:
+        logger.error("Order update error (%s): %s", order_id, exc)
+        return None

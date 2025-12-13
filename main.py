@@ -18,8 +18,8 @@ from config import (ADDRESS, APP_PORT, DEBUG_MODE, FACILITATOR_CONFIG,
                     SENDGRID_API_KEY)
 # Import services
 from services.notification_service import send_order_confirmation_email
-from services.order_service import (generate_order_id, get_order_by_id,
-                                    save_product_order)
+from services.order_service import (create_or_update_order, generate_order_id,
+                                    get_order_by_id, update_order)
 from services.payment_service import (create_payment_requirements,
                                       generate_transaction_link,
                                       parse_payment_header, settle_payment,
@@ -129,6 +129,7 @@ def product_order(link):
     price_total = sum(p.get("price", 0) for p in products)
     shipping_total = sum(p.get("shipping", 0) for p in products)
     total = round(quantity * price_total + shipping_total, 2)
+    currency = products[0].get("currency", "USD")
 
     data = {
         "time": timestamp,
@@ -143,10 +144,31 @@ def product_order(link):
         "order_id": order_id,
         "quantity": quantity,
         "total": total,
+        "currency": currency,
         "payment": False,
         "require_shipping": require_shipping,
     }
-    save_product_order(link, data)
+    order_payload = {
+        "orderId": order_id,
+        "linkCode": link,
+        "email": email,
+        "phone": phone,
+        "name": name,
+        "address1": address1,
+        "address2": address2,
+        "state": state,
+        "zip": zip_code,
+        "country": country,
+        "quantity": quantity,
+        "total": total,
+        "currency": currency,
+        "requireShipping": require_shipping,
+        "payment": False,
+    }
+    created_order = create_or_update_order(order_payload)
+    if not created_order:
+        app.logger.error("Failed to persist order via dashboard (%s)", order_id)
+        return "Unable to create order", 503
     return redirect(f"/{link}/order/{order_id}")
 
 
@@ -154,7 +176,7 @@ def product_order(link):
 async def product_order_id(link, order_id):
     """Handle order payment verification and settlement (async)."""
     # Get order and product details
-    order = get_order_by_id(link, order_id)
+    order = get_order_by_id(order_id)
     if not order:
         return "Not found", 404
 
@@ -235,7 +257,14 @@ async def product_order_id(link, order_id):
     order["payment"] = True
     order["tx_hash"] = tx_hash
     order["tx_network"] = tx_network
-    save_product_order(link, order)
+    update_order(
+        order_id,
+        {
+            "payment": True,
+            "txHash": tx_hash,
+            "txNetwork": tx_network,
+        },
+    )
 
     # Send order confirmation email
     if order.get("email") and ORDER_CONFIRMATION_RECIPIENT and SENDGRID_API_KEY:
