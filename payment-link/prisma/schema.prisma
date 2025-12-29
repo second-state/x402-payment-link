@@ -1,0 +1,171 @@
+// Prisma schema for x402-payment-link
+
+generator client {
+  provider   = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Network {
+  base_sepolia
+  base
+  base_mainnet
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String?
+  email     String?   @unique
+  emailVerified DateTime?
+  image     String?
+  role      String    @default("merchant")
+  hashedPassword String?
+  accounts  Account[]
+  sessions  Session[]
+  apiKeys   ApiKey[]
+  products  Product[]
+  links     Link[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Account {
+  id                 String   @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+  oauth_token_secret String?
+  oauth_token        String?
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@index([token])
+}
+
+model ApiKey {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  hashedKey String    @unique
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  slug        String
+  name        String
+  description String?
+  image       String?
+  active      Boolean   @default(true)
+  prices      Price[]
+  linkProducts LinkProduct[]
+  userId      String?
+  owner       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, slug])
+}
+
+model Price {
+  id          String      @id @default(cuid())
+  productId   String
+  amount      Decimal
+  shipping    Decimal     @default(0)
+  currency    String      @default("USD")
+  active      Boolean     @default(true)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  linkProducts LinkProduct[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  @@index([productId])
+  @@unique([productId])
+}
+
+model Link {
+  id               String       @id @default(cuid())
+  code             String       @unique
+  network          Network
+  payToAddress     String
+  successUrl       String?
+  cancelUrl        String?
+  requireShipping  Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  userId           String?
+  owner            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  linkProducts     LinkProduct[]
+  orders           Order[]
+}
+
+model LinkProduct {
+  id        String   @id @default(cuid())
+  linkId    String
+  productId String
+  priceId   String?
+
+  link    Link    @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price   Price?  @relation(fields: [priceId], references: [id], onDelete: SetNull)
+
+  @@unique([linkId, productId])
+  @@index([productId])
+}
+
+model Order {
+  id             String   @id @default(cuid())
+  orderId        String   @unique
+  linkId         String?
+  link           Link?    @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  linkCode       String
+  email          String?
+  phone          String?
+  name           String?
+  address1       String?
+  address2       String?
+  state          String?
+  zip            String?
+  country        String?
+  quantity       Int      @default(1)
+  total          Decimal  @default(0)
+  currency       String   @default("USD")
+  requireShipping Boolean @default(true)
+  payment        Boolean  @default(false)
+  txHash         String?
+  txNetwork      String?
+  paidAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([linkCode])
+  @@index([linkId])
+}
