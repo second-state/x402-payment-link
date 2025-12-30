@@ -64,7 +64,7 @@ def x402_response(error, payment_requirements):
             error=error,
         ).model_dump(by_alias=True)
 
-        return response_data, 400
+        return response_data, 402
 
 
 @app.after_request
