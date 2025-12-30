@@ -10,7 +10,6 @@ from x402.encoding import safe_base64_decode
 from x402.facilitator import FacilitatorClient
 from x402.types import PaymentPayload, PaymentRequirements
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -54,6 +53,7 @@ def create_payment_requirements(
             pay_to=pay_to_address,
             max_timeout_seconds=max_timeout_seconds,
             extra=eip712_domain,
+            output_schema={},
         )
     ]
 
@@ -90,7 +90,8 @@ def parse_payment_header(
         logger.error(f"No matching payment requirements found ({order_id})")
         return payment, None, "No matching payment requirements found"
 
-    logger.info(f"Selected payment requirements ({order_id}): {selected_payment_requirements}")
+    logger.info(
+        f"Selected payment requirements ({order_id}): {selected_payment_requirements}")
     return payment, selected_payment_requirements, None
 
 
@@ -120,10 +121,12 @@ async def verify_payment(
 
     if not verify_response.is_valid:
         error_reason = verify_response.invalid_reason or "Unknown error"
-        logger.error(f"Payment verification failed ({order_id}): {error_reason}")
+        logger.error(
+            f"Payment verification failed ({order_id}): {error_reason}")
         return False, f"Payment verification failed: {error_reason}"
 
-    logger.info(f"Payment verified successfully ({order_id}): {verify_response}")
+    logger.info(
+        f"Payment verified successfully ({order_id}): {verify_response}")
     return True, None
 
 
@@ -151,7 +154,8 @@ async def settle_payment(
 
         if not settle_response.success:
             error_reason = settle_response.error_reason or "Unknown error"
-            logger.error(f"Payment settlement not success ({order_id}): {error_reason}")
+            logger.error(
+                f"Payment settlement not success ({order_id}): {error_reason}")
             return False, None, None, f"Payment settlement not success: {error_reason}"
 
         logger.info(f"Payment settled successfully ({order_id})")
