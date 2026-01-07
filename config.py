@@ -3,8 +3,6 @@
 import os
 
 from dotenv import load_dotenv
-from x402.facilitator import FacilitatorConfig
-from x402.types import PaywallConfig
 
 # Load environment variables
 load_dotenv()
@@ -25,10 +23,8 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 ORDER_CONFIRMATION_RECIPIENT = os.getenv("ORDER_CONFIRMATION_RECIPIENT")
 
 # Paywall configuration
-PAYWALL_CONFIG = PaywallConfig(
-    app_name=os.getenv("APP_NAME", "x402-mvp"),
-    app_logo=os.getenv("APP_LOGO", "/static/secondstate.png"),
-)
+APP_NAME = os.getenv("APP_NAME", "x402-mvp")
+APP_LOGO = os.getenv("APP_LOGO", "/static/secondstate.png")
 
 # Validate required environment variables
 if not ADDRESS:
@@ -39,4 +35,3 @@ if NETWORK not in supported_networks:
 
 # Create facilitator config
 FACILITATOR_URL = os.getenv("FACILITATOR_URL", "https://x402f1.secondstate.io")
-FACILITATOR_CONFIG = FacilitatorConfig(url=FACILITATOR_URL)

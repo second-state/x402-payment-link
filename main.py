@@ -6,24 +6,16 @@ from logging.handlers import RotatingFileHandler
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory)
 from werkzeug.middleware.proxy_fix import ProxyFix
-from x402.common import x402_VERSION
-from x402.facilitator import FacilitatorClient
-from x402.paywall import get_paywall_html, is_browser_request
-from x402.types import x402PaymentRequiredResponse
 
 # Import configuration
-from config import (ADDRESS, APP_PORT, ENVIRONMENT, FACILITATOR_CONFIG,
-                    FROM_EMAIL, MAX_DEADLINE_SECONDS, NETWORK,
-                    ORDER_CONFIRMATION_RECIPIENT, PAYWALL_CONFIG,
-                    SENDGRID_API_KEY)
+from config import (ADDRESS, APP_LOGO, APP_NAME, APP_PORT, ENVIRONMENT,
+                    FACILITATOR_URL, FROM_EMAIL, MAX_DEADLINE_SECONDS, NETWORK,
+                    ORDER_CONFIRMATION_RECIPIENT, SENDGRID_API_KEY)
 # Import services
 from services.notification_service import send_order_confirmation_email
 from services.order_service import (generate_order_id, get_order_by_id,
                                     save_product_order)
-from services.payment_service import (create_payment_requirements,
-                                      generate_transaction_link,
-                                      parse_payment_header, settle_payment,
-                                      verify_payment)
+from services.payment_service import PaymentService
 from services.product_service import get_product_config, get_products
 
 app = Flask(__name__)
@@ -46,25 +38,6 @@ app.wsgi_app = ProxyFix(
     x_for=1,
     x_proto=1,
 )
-
-
-def x402_response(error, payment_requirements):
-    """Create a 402 response with payment requirements."""
-    request_headers = dict(request.headers)
-
-    if is_browser_request(request_headers):
-        html_content = get_paywall_html(
-            error, payment_requirements, PAYWALL_CONFIG
-        )
-        return html_content, 400
-    else:
-        response_data = x402PaymentRequiredResponse(
-            x402_version=x402_VERSION,
-            accepts=payment_requirements,
-            error=error,
-        ).model_dump(by_alias=True)
-
-        return response_data, 402
 
 
 @app.after_request
@@ -146,54 +119,45 @@ async def product_order_id(product, order_id):
     if not product_config:
         return "Not found", 404
 
-    # Create payment requirements
-    payment_requirements = create_payment_requirements(
-        product_config=product_config,
-        order=order,
-        order_id=order_id,
+    # Create payment service
+    payment_service = PaymentService(
+        app_name=APP_NAME,
+        app_logo=APP_LOGO,
+        headers=request.headers,
         resource_url=request.url,
+        price=order.get("total"),
+        description=f"Payment for {product_config['name']} order {order_id}",
         network=NETWORK,
         pay_to_address=ADDRESS,
+        facilitator_url=FACILITATOR_URL,
         max_timeout_seconds=MAX_DEADLINE_SECONDS
     )
 
-    # Check payment header
-    payment_header = request.headers.get("X-PAYMENT", "")
-    if payment_header == "":
-        return x402_response("No X-PAYMENT header provided", payment_requirements)
-
-    app.logger.info(
-        f"Received X-PAYMENT header ({order_id}): {payment_header}")
-
     # Parse and validate payment header
-    payment, selected_requirements, error = parse_payment_header(
-        payment_header, payment_requirements, order_id
-    )
-    if error:
-        app.logger.error(f"Payment header parse error ({order_id}): {error}")
-        return x402_response(error, payment_requirements)
+    success, payment, selected_requirements, parse_error = payment_service.parse()
+    if not success:
+        app.logger.error(
+            f"Payment header parse error ({order_id}): {parse_error}")
+        return payment_service.response(parse_error)
 
     # Verify payment
-    facilitator = FacilitatorClient(FACILITATOR_CONFIG)
-    is_valid, verify_error = await verify_payment(
-        facilitator, payment, selected_requirements, order_id
-    )
+    is_valid, verify_error = await payment_service.verify(payment, selected_requirements, order_id)
     if not is_valid:
         app.logger.error(
             f"Payment verification error ({order_id}): {verify_error}")
-        return x402_response(verify_error, payment_requirements)
+        return payment_service.response(verify_error)
 
     # Settle payment
-    success, tx_hash, tx_network, settle_error = await settle_payment(
-        facilitator, payment, selected_requirements, order_id
+    success, tx_hash, tx_network, settle_error = await payment_service.settle(
+        payment, selected_requirements, order_id
     )
     if not success:
         app.logger.error(
             f"Payment settlement error ({order_id}): {settle_error}")
-        return x402_response(settle_error, payment_requirements)
+        return payment_service.response(settle_error)
 
     # Generate transaction link
-    tx_link = generate_transaction_link(tx_hash, tx_network)
+    tx_link = PaymentService.generate_transaction_link(tx_hash, tx_network)
     if tx_link:
         app.logger.info(f"Transaction: {tx_link}")
     else:
