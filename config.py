@@ -1,11 +1,10 @@
 """Application configuration and constants."""
 
 import os
-from cdp.x402 import create_facilitator_config
+
 from dotenv import load_dotenv
 from x402.facilitator import FacilitatorConfig
 from x402.types import PaywallConfig
-
 
 # Load environment variables
 load_dotenv()
@@ -19,10 +18,6 @@ ORDER_DIR = "data"
 NETWORK = os.getenv("NETWORK", "base-sepolia")
 ADDRESS = os.getenv("ADDRESS")
 MAX_DEADLINE_SECONDS = int(os.getenv("MAX_DEADLINE_SECONDS", "60"))
-
-# CDP settings (for production)
-CDP_API_KEY_ID = os.getenv("CDP_API_KEY_ID")
-CDP_API_KEY_SECRET = os.getenv("CDP_API_KEY_SECRET")
 
 # Email settings
 FROM_EMAIL = os.getenv("FROM_EMAIL", "vivian@secondstate.io")
