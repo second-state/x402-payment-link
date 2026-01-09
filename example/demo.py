@@ -5,15 +5,11 @@ This example demonstrates how to add payment functionality to a Flask endpoint
 using the PaymentService class.
 """
 
-from services.payment_service import PaymentService
-from flask import Flask, request
-from dotenv import load_dotenv
 import os
-import sys
 
-# Add parent directory to path to import PaymentService
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+from dotenv import load_dotenv
+from flask import Flask, request
+from x402_payment_service import PaymentService
 
 # Load environment variables
 load_dotenv()

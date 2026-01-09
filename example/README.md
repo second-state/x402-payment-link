@@ -1,6 +1,6 @@
 # Adding x402 Payment to a Flask Application
 
-This example demonstrates how to integrate x402 payment functionality into a simple Flask application using `PaymentService`.
+This example demonstrates how to integrate x402 payment functionality into a simple Flask application using `PaymentService` from the `x402-payment-service` package.
 
 ## Before: A Simple Flask Server (Without Payment)
 
@@ -33,7 +33,7 @@ With `PaymentService`, you can easily add payment requirements to any endpoint. 
 ```python
 import os
 from flask import Flask, request
-from services.payment_service import PaymentService
+from x402_payment_service import PaymentService
 
 app = Flask(__name__)
 
@@ -126,7 +126,7 @@ export FACILITATOR_URL="https://x402f1.secondstate.io"
 2. Install dependencies:
 
 ```bash
-pip install flask python-dotenv x402
+pip install flask python-dotenv git+https://github.com/second-state/x402-payment-service.git
 ```
 
 3. Run the demo:

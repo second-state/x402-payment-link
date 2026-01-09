@@ -1798,7 +1798,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "sendgrid" },
     { name = "werkzeug" },
-    { name = "x402" },
+    { name = "x402-payment-service" },
 ]
 
 [package.metadata]
@@ -1809,7 +1809,15 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "sendgrid", specifier = ">=6.12.5" },
     { name = "werkzeug", specifier = ">=3.1.3" },
-    { name = "x402", git = "https://github.com/coinbase/x402.git?subdirectory=python%2Fx402" },
+    { name = "x402-payment-service", git = "https://github.com/second-state/x402-payment-service.git" },
+]
+
+[[package]]
+name = "x402-payment-service"
+version = "0.1.0"
+source = { git = "https://github.com/second-state/x402-payment-service.git#1a9097339000085be0aefda1c187a6acf6b92ddb" }
+dependencies = [
+    { name = "x402" },
 ]
 
 [[package]]

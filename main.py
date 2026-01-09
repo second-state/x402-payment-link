@@ -6,6 +6,7 @@ from logging.handlers import RotatingFileHandler
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory)
 from werkzeug.middleware.proxy_fix import ProxyFix
+from x402_payment_service import PaymentService
 
 # Import configuration
 from config import (ADDRESS, APP_LOGO, APP_NAME, APP_PORT, ENVIRONMENT,
@@ -15,7 +16,6 @@ from config import (ADDRESS, APP_LOGO, APP_NAME, APP_PORT, ENVIRONMENT,
 from services.notification_service import send_order_confirmation_email
 from services.order_service import (generate_order_id, get_order_by_id,
                                     save_product_order)
-from services.payment_service import PaymentService
 from services.product_service import get_product_config, get_products
 
 app = Flask(__name__)
