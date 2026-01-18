@@ -40,7 +40,6 @@ Copy `.env.example` to `.env` and configure:
 ### Service Layer (`services/`)
 - `product_service.py`: Reads product catalog from `products.yaml`
 - `order_service.py`: Persists orders as JSON lines in `data/<product>.txt`
-- `payment_service.py`: x402 payment verification/settlement logic
 - `notification_service.py`: SendGrid email notifications
 
 ### Configuration
@@ -49,6 +48,7 @@ Copy `.env.example` to `.env` and configure:
 
 ### Key Dependencies
 - `x402`: Protocol implementation (from Coinbase x402 repo)
+- `x402-payment-service`: Payment verification/settlement logic (external package from GitHub)
 - `cdp-sdk`: Coinbase Developer Platform SDK
 - `flask[async]`: Async views for payment handlers
 
