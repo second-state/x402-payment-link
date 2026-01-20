@@ -9,9 +9,10 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from x402_payment_service import PaymentService
 
 # Import configuration
-from config import (ADDRESS, APP_LOGO, APP_NAME, APP_PORT, ENVIRONMENT,
-                    FACILITATOR_URL, FROM_EMAIL, MAX_DEADLINE_SECONDS, NETWORK,
-                    ORDER_CONFIRMATION_RECIPIENT, SENDGRID_API_KEY)
+from config import (ADDRESS, APP_LOGO, APP_NAME, APP_PORT, AVAILABLE_TOKENS,
+                    ENVIRONMENT, FACILITATOR_URL, FROM_EMAIL,
+                    MAX_DEADLINE_SECONDS, NETWORK, ORDER_CONFIRMATION_RECIPIENT,
+                    SENDGRID_API_KEY, get_token_by_id, get_token_config_for_payment)
 # Import services
 from services.notification_service import send_order_confirmation_email
 from services.order_service import (generate_order_id, get_order_by_id,
@@ -65,15 +66,30 @@ def product_page(product):
     product_config = get_product_config(product, ENVIRONMENT)
     if not product_config:
         return "Not found", 404
-    return render_template(f"{product}/product.html", product=product_config)
+
+    # Merge token prices into AVAILABLE_TOKENS for display
+    token_prices = product_config.get("token_prices", {})
+    tokens_with_prices = []
+    for token in AVAILABLE_TOKENS:
+        token_copy = token.copy()
+        if token["id"] in token_prices:
+            tp = token_prices[token["id"]]
+            token_copy["price"] = tp.get("price", product_config["price"])
+            token_copy["shipping"] = tp.get("shipping", product_config["shipping"])
+        else:
+            token_copy["price"] = product_config["price"]
+            token_copy["shipping"] = product_config["shipping"]
+        tokens_with_prices.append(token_copy)
+
+    return render_template(
+        f"{product}/product.html",
+        product=product_config,
+        tokens=tokens_with_prices
+    )
 
 
 @app.route("/<product>/order", methods=["POST"])
 def product_order(product):
-    product_config = get_product_config(product, ENVIRONMENT)
-    if not product_config:
-        return "Not found", 404
-
     timestamp = time.time()
     email = request.form.get("email")
     phone = request.form.get("phone")
@@ -85,6 +101,13 @@ def product_order(product):
     country = request.form.get("country")
     order_id = generate_order_id()
     quantity = int(request.form.get("quantity", 1))
+    token_id = request.form.get("token", "usdc")
+
+    # Get product config with token-specific pricing
+    product_config = get_product_config(product, ENVIRONMENT, token_id)
+    if not product_config:
+        return "Not found", 404
+
     total = round(
         quantity * product_config["price"] + product_config["shipping"], 2)
 
@@ -100,11 +123,12 @@ def product_order(product):
         "country": country,
         "order_id": order_id,
         "quantity": quantity,
+        "token_id": token_id,
         "total": total,
         "payment": False,
     }
     save_product_order(product, data)
-    return redirect(f"/{product}/order/{order_id}")
+    return redirect(f"/{product}/order/{order_id}?token={token_id}")
 
 
 @app.route("/<product>/order/<order_id>")
@@ -119,6 +143,11 @@ async def product_order_id(product, order_id):
     if not product_config:
         return "Not found", 404
 
+    # Get selected token and build token_config for PaymentService
+    token_id = request.args.get("token", order.get("token_id", "usdc"))
+    selected_token = get_token_by_id(token_id)
+    token_config = get_token_config_for_payment(selected_token)
+
     # Create payment service
     payment_service = PaymentService(
         app_name=APP_NAME,
@@ -130,7 +159,8 @@ async def product_order_id(product, order_id):
         network=NETWORK,
         pay_to_address=ADDRESS,
         facilitator_url=FACILITATOR_URL,
-        max_timeout_seconds=MAX_DEADLINE_SECONDS
+        max_timeout_seconds=MAX_DEADLINE_SECONDS,
+        token_config=token_config
     )
 
     # Parse and validate payment header

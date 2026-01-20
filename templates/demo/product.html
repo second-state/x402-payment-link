@@ -418,6 +418,39 @@
             max-height: 0;
             pointer-events: none;
         }
+
+        /* Token selector styles */
+        .token-selector {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid #b3d9f7;
+        }
+
+        .token-selector label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #32325d;
+            margin-bottom: 8px;
+        }
+
+        .token-selector select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1px solid #b3d9f7;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .token-selector select:focus {
+            outline: none;
+            border-color: #635bff;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -465,12 +498,27 @@
                     <span id="totalCost">${{ "%.2f"|format(product.price + product.shipping) }}</span>
                 </div>
             </div>
+
+            {% if tokens|length > 1 %}
+            <div class="token-selector">
+                <label for="tokenSelect">Pay with:</label>
+                <select id="tokenSelect" onchange="updateTokenDisplay()">
+                    {% for token in tokens %}
+                    <option value="{{ token.id }}" data-symbol="{{ token.symbol }}" {% if token.is_default %}selected{% endif %}>
+                        {{ token.symbol }} - {{ token.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
         </div>
 
         <div class="form-container" id="shippingForm">
             <div class="section-title">Contact Information</div>
-            
+
             <form id="checkoutForm" action="/{{ product.id }}/order" method="POST" novalidate>
+                <input type="hidden" id="tokenInput" name="token" value="{{ tokens[0].id if tokens else 'usdc' }}">
+
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input
@@ -509,11 +557,11 @@
         const quantityDecrease = document.getElementById('quantityDecrease');
         const quantityIncrease = document.getElementById('quantityIncrease');
 
-        const unitPrice = {{ "%.2f"|format(product.price) }};
-        const shippingPrice = {{ "%.2f"|format(product.shipping) }};
+        const tokens = {{ tokens|tojson if tokens else '[]' }};
 
-        // Track current total for button (from backend)
-        let currentTotal = {{ product.price + product.shipping }};
+        let unitPrice = {{ "%.2f"|format(product.price) }};
+        let shippingPrice = {{ "%.2f"|format(product.shipping) }};
+        let currentTotal = unitPrice + shippingPrice;
 
         function sanitizeQuantity(value) {
             const numeric = parseInt(value, 10);
@@ -533,6 +581,28 @@
             const safeValue = sanitizeQuantity(value);
             quantityInput.value = safeValue;
             updateOrderSummary(safeValue);
+        }
+
+        function updateTokenDisplay() {
+            const tokenSelect = document.getElementById('tokenSelect');
+            if (!tokenSelect) return;
+
+            const selectedOption = tokenSelect.options[tokenSelect.selectedIndex];
+            const tokenId = selectedOption.value;
+
+            const tokenInput = document.getElementById('tokenInput');
+            if (tokenInput) {
+                tokenInput.value = tokenId;
+            }
+
+            const selectedToken = tokens.find(t => t.id === tokenId);
+            if (selectedToken) {
+                unitPrice = selectedToken.price || unitPrice;
+                shippingPrice = selectedToken.shipping !== undefined ? selectedToken.shipping : shippingPrice;
+                document.getElementById('shippingCost').textContent = `$${shippingPrice.toFixed(2)}`;
+                const quantity = sanitizeQuantity(quantityInput.value);
+                updateOrderSummary(quantity);
+            }
         }
 
         quantityDecrease.addEventListener('click', () => {
@@ -624,6 +694,14 @@
                 document.querySelector('.container').style.opacity = '1';
                 document.querySelector('.container').style.transform = 'translateY(0)';
             }, 100);
+
+            updateTokenDisplay();
+        });
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                updateTokenDisplay();
+            }
         });
     </script>
 </body>
