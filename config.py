@@ -50,6 +50,7 @@ DEFAULT_USDC_TOKEN = {
     "decimals": 6,
     "address": None,
     "is_default": True,
+    "native": False,
 }
 
 
@@ -96,7 +97,8 @@ def get_available_tokens(network: str, environment: str) -> list[dict]:
         if addresses and not address:
             continue
 
-        # Build token dict
+        is_native = token_data.get("native", False)
+
         token = {
             "id": token_id,
             "symbol": token_data.get("symbol", token_id.upper()),
@@ -104,7 +106,8 @@ def get_available_tokens(network: str, environment: str) -> list[dict]:
             "decimals": token_data.get("decimals", 18),
             "address": address,
             "version": token_data.get("version", "1"),
-            "is_default": token_id == "usdc" or not address,
+            "is_default": token_id == "usdc",
+            "native": is_native,
         }
         tokens.append(token)
 
@@ -140,7 +143,17 @@ def get_token_config_for_payment(token: dict) -> Optional[dict]:
     Returns:
         Token config dict for PaymentService or None if using default USDC
     """
-    if not token or not token.get("address"):
+    if not token:
+        return None
+
+    if token.get("native", False):
+        return {
+            "decimals": token.get("decimals", 18),
+            "symbol": token.get("symbol", "ETH"),
+            "name": token.get("name", token.get("symbol", "Native Token")),
+        }
+
+    if not token.get("address"):
         return None
 
     return {

@@ -1,0 +1,23 @@
+tokens:
+  usdc:
+    symbol: USDC
+    name: USD Coin
+    decimals: 6
+    # No address - payment handled by x402 SDK
+
+  native:
+    symbol: ETH
+    name: Ethereum
+    decimals: 18
+    native: true
+
+environments:
+  staging:
+    enabled_tokens:
+      - usdc
+      - native
+
+  production:
+    enabled_tokens:
+      - usdc
+      - native

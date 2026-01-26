@@ -108,8 +108,7 @@ def product_order(product):
     if not product_config:
         return "Not found", 404
 
-    total = round(
-        quantity * product_config["price"] + product_config["shipping"], 2)
+    total = quantity * product_config["price"] + product_config["shipping"]
 
     data = {
         "time": timestamp,
@@ -148,6 +147,14 @@ async def product_order_id(product, order_id):
     selected_token = get_token_by_id(token_id)
     token_config = get_token_config_for_payment(selected_token)
 
+    # Re-fetch product config with token-specific pricing
+    product_config = get_product_config(product, ENVIRONMENT, token_id)
+    if not product_config:
+        return "Not found", 404
+
+    # Check if selected token is native
+    is_native_token = selected_token.get("native", False) if selected_token else False
+
     # Create payment service
     payment_service = PaymentService(
         app_name=APP_NAME,
@@ -160,7 +167,8 @@ async def product_order_id(product, order_id):
         pay_to_address=ADDRESS,
         facilitator_url=FACILITATOR_URL,
         max_timeout_seconds=MAX_DEADLINE_SECONDS,
-        token_config=token_config
+        token_config=token_config,
+        native_token=is_native_token
     )
 
     # Parse and validate payment header

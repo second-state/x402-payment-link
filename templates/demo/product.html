@@ -297,10 +297,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             margin-bottom: 8px;
             font-size: 14px;
             color: #32325d;
+            flex-wrap: nowrap;
+            min-width: 0;
+        }
+
+        .price-row > span:last-child,
+        .price-row > #productPrice,
+        .price-row > #shippingCost,
+        .price-row > #totalCost {
+            white-space: nowrap;
+            text-align: right;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
         }
 
         .price-row:last-child {
@@ -315,7 +327,21 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .price-row-left > span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        .price-row-left .quantity-control {
+            flex-shrink: 0;
         }
 
         .quantity-control {
@@ -487,15 +513,15 @@
                             <button type="button" class="quantity-button" id="quantityIncrease" aria-label="Increase quantity">+</button>
                         </div>
                     </div>
-                    <span id="productPrice">${{ "%.2f"|format(product.price) }}</span>
+                    <span id="productPrice">Loading...</span>
                 </div>
                 <div class="price-row">
                     <span>Shipping</span>
-                    <span id="shippingCost">${{ "%.2f"|format(product.shipping) }}</span>
+                    <span id="shippingCost">Loading...</span>
                 </div>
                 <div class="price-row">
                     <span>Total</span>
-                    <span id="totalCost">${{ "%.2f"|format(product.price + product.shipping) }}</span>
+                    <span id="totalCost">Loading...</span>
                 </div>
             </div>
 
@@ -532,7 +558,7 @@
                 </div>
 
                 <button type="submit" class="submit-button" id="submitButton">
-                    Pay ${{ "%.2f"|format(product.price + product.shipping) }}
+                    Pay...
                 </button>
 
                 <div class="secure-notice">
@@ -559,8 +585,8 @@
 
         const tokens = {{ tokens|tojson if tokens else '[]' }};
 
-        let unitPrice = {{ "%.2f"|format(product.price) }};
-        let shippingPrice = {{ "%.2f"|format(product.shipping) }};
+        let unitPrice = {{ product.price }};
+        let shippingPrice = {{ product.shipping }};
         let currentTotal = unitPrice + shippingPrice;
 
         function sanitizeQuantity(value) {
@@ -568,13 +594,47 @@
             return Number.isNaN(numeric) || numeric < 1 ? 1 : numeric;
         }
 
+        // Get the current token symbol
+        function getCurrentSymbol() {
+            const tokenSelect = document.getElementById('tokenSelect');
+            if (tokenSelect) {
+                const selectedOption = tokenSelect.options[tokenSelect.selectedIndex];
+                return selectedOption.getAttribute('data-symbol') || '$';
+            }
+            return '$';
+        }
+
+        // Format price based on token type (remove trailing zeros)
+        function formatPrice(amount, symbol) {
+            if (symbol === '$' || symbol === 'USDC') {
+                return `$${amount.toFixed(2)}`;
+            }
+            // For crypto tokens, remove trailing zeros
+            let formatted;
+            if (amount === 0) {
+                formatted = '0';
+            } else if (amount < 0.0001) {
+                formatted = amount.toFixed(8).replace(/\.?0+$/, '');
+            } else if (amount < 0.01) {
+                formatted = amount.toFixed(6).replace(/\.?0+$/, '');
+            } else if (amount < 1) {
+                formatted = amount.toFixed(4).replace(/\.?0+$/, '');
+            } else {
+                formatted = amount.toFixed(2).replace(/\.?0+$/, '');
+            }
+            return `${formatted} ${symbol}`;
+        }
+
         function updateOrderSummary(quantity) {
             const productSubtotal = unitPrice * quantity;
             const orderTotal = productSubtotal + shippingPrice;
-            productPriceElement.textContent = `$${productSubtotal.toFixed(2)}`;
-            totalCost.textContent = `$${orderTotal.toFixed(2)}`;
+            const symbol = getCurrentSymbol();
+
+            productPriceElement.textContent = formatPrice(productSubtotal, symbol);
+            totalCost.textContent = formatPrice(orderTotal, symbol);
+            shippingCost.textContent = formatPrice(shippingPrice, symbol);
             currentTotal = orderTotal;
-            submitButton.textContent = `Pay $${orderTotal.toFixed(2)}`;
+            submitButton.textContent = `Pay ${formatPrice(orderTotal, symbol)}`;
         }
 
         function syncQuantityAndTotals(value) {
@@ -599,7 +659,6 @@
             if (selectedToken) {
                 unitPrice = selectedToken.price || unitPrice;
                 shippingPrice = selectedToken.shipping !== undefined ? selectedToken.shipping : shippingPrice;
-                document.getElementById('shippingCost').textContent = `$${shippingPrice.toFixed(2)}`;
                 const quantity = sanitizeQuantity(quantityInput.value);
                 updateOrderSummary(quantity);
             }

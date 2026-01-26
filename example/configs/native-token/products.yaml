@@ -1,0 +1,27 @@
+echokit_diy:
+  name: EchoKit DIY
+  description: "EchoKit is a fun voice AI agent that can chat with your out of the box. But more importantly, it is also a complete toolkit that enables YOU (and your kids / students) to build cutting edge AI agent systems. NOTE: We will manually assemble, flash, and test each device toolkit before shipping. Expect delivery in up to 3 weeks for international orders. Thank you for your patience."
+  image: https://echokit.dev/media/echokit-diy-03.png
+  staging:
+    price: 0.1
+    shipping: 0.1
+  production:
+    price: 49.00
+    shipping: 4.99
+
+demo:
+  name: KII video on AI opportunities
+  description: "Pay to watch an KII video - Expanding Job Opportunities through AI-based Projects"
+  image: https://pay.x402labs.dev/static/kii.jpg
+  staging:
+    price: 0.1
+    shipping: 0
+    tokens:
+      usdc:
+        price: 0.1
+      native:
+        price: 0.00005
+        shipping: 0.000001
+  production:
+    price: 0.1
+    shipping: 0
