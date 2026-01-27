@@ -150,6 +150,15 @@ my_product:
    - `order_confirmation.html` - Post-payment success page
    - `order_confirmation_email.html` - Email template (optional)
 
+### Multi-Token / Native-Token Payments
+
+To accept payments in additional tokens (native ETH or custom ERC-20) beyond the default USDC:
+
+1. Create `tokens.yaml` in the project root to define supported tokens (defaults to USDC only if not provided)
+2. Add token-specific pricing under `tokens` in `products.yaml`
+
+See `example/configs/multi-token/` and `example/configs/native-token/` for reference configurations.
+
 ## Docker Deployment
 
 The `docker-compose.yaml` configuration:
