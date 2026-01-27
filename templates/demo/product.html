@@ -297,10 +297,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             margin-bottom: 8px;
             font-size: 14px;
             color: #32325d;
+            flex-wrap: nowrap;
+            min-width: 0;
+        }
+
+        .price-row > span:last-child,
+        .price-row > #productPrice,
+        .price-row > #shippingCost,
+        .price-row > #totalCost {
+            white-space: nowrap;
+            text-align: right;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
         }
 
         .price-row:last-child {
@@ -315,7 +327,21 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .price-row-left > span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        .price-row-left .quantity-control {
+            flex-shrink: 0;
         }
 
         .quantity-control {
@@ -418,6 +444,39 @@
             max-height: 0;
             pointer-events: none;
         }
+
+        /* Token selector styles */
+        .token-selector {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid #b3d9f7;
+        }
+
+        .token-selector label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #32325d;
+            margin-bottom: 8px;
+        }
+
+        .token-selector select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1px solid #b3d9f7;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .token-selector select:focus {
+            outline: none;
+            border-color: #635bff;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -454,23 +513,38 @@
                             <button type="button" class="quantity-button" id="quantityIncrease" aria-label="Increase quantity">+</button>
                         </div>
                     </div>
-                    <span id="productPrice">${{ "%.2f"|format(product.price) }}</span>
+                    <span id="productPrice">Loading...</span>
                 </div>
                 <div class="price-row">
                     <span>Shipping</span>
-                    <span id="shippingCost">${{ "%.2f"|format(product.shipping) }}</span>
+                    <span id="shippingCost">Loading...</span>
                 </div>
                 <div class="price-row">
                     <span>Total</span>
-                    <span id="totalCost">${{ "%.2f"|format(product.price + product.shipping) }}</span>
+                    <span id="totalCost">Loading...</span>
                 </div>
             </div>
+
+            {% if tokens|length > 1 %}
+            <div class="token-selector">
+                <label for="tokenSelect">Pay with:</label>
+                <select id="tokenSelect" onchange="updateTokenDisplay()">
+                    {% for token in tokens %}
+                    <option value="{{ token.id }}" data-symbol="{{ token.symbol }}" {% if token.is_default %}selected{% endif %}>
+                        {{ token.symbol }} - {{ token.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
         </div>
 
         <div class="form-container" id="shippingForm">
             <div class="section-title">Contact Information</div>
-            
+
             <form id="checkoutForm" action="/{{ product.id }}/order" method="POST" novalidate>
+                <input type="hidden" id="tokenInput" name="token" value="{{ tokens[0].id if tokens else 'usdc' }}">
+
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input
@@ -484,7 +558,7 @@
                 </div>
 
                 <button type="submit" class="submit-button" id="submitButton">
-                    Pay ${{ "%.2f"|format(product.price + product.shipping) }}
+                    Pay...
                 </button>
 
                 <div class="secure-notice">
@@ -509,30 +583,85 @@
         const quantityDecrease = document.getElementById('quantityDecrease');
         const quantityIncrease = document.getElementById('quantityIncrease');
 
-        const unitPrice = {{ "%.2f"|format(product.price) }};
-        const shippingPrice = {{ "%.2f"|format(product.shipping) }};
+        const tokens = {{ tokens|tojson if tokens else '[]' }};
 
-        // Track current total for button (from backend)
-        let currentTotal = {{ product.price + product.shipping }};
+        let unitPrice = {{ product.price }};
+        let shippingPrice = {{ product.shipping }};
+        let currentTotal = unitPrice + shippingPrice;
 
         function sanitizeQuantity(value) {
             const numeric = parseInt(value, 10);
             return Number.isNaN(numeric) || numeric < 1 ? 1 : numeric;
         }
 
+        // Get the current token symbol
+        function getCurrentSymbol() {
+            const tokenSelect = document.getElementById('tokenSelect');
+            if (tokenSelect) {
+                const selectedOption = tokenSelect.options[tokenSelect.selectedIndex];
+                return selectedOption.getAttribute('data-symbol') || '$';
+            }
+            return '$';
+        }
+
+        // Format price based on token type (remove trailing zeros)
+        function formatPrice(amount, symbol) {
+            if (symbol === '$' || symbol === 'USDC') {
+                return `$${amount.toFixed(2)}`;
+            }
+            // For crypto tokens, remove trailing zeros
+            let formatted;
+            if (amount === 0) {
+                formatted = '0';
+            } else if (amount < 0.0001) {
+                formatted = amount.toFixed(8).replace(/\.?0+$/, '');
+            } else if (amount < 0.01) {
+                formatted = amount.toFixed(6).replace(/\.?0+$/, '');
+            } else if (amount < 1) {
+                formatted = amount.toFixed(4).replace(/\.?0+$/, '');
+            } else {
+                formatted = amount.toFixed(2).replace(/\.?0+$/, '');
+            }
+            return `${formatted} ${symbol}`;
+        }
+
         function updateOrderSummary(quantity) {
             const productSubtotal = unitPrice * quantity;
             const orderTotal = productSubtotal + shippingPrice;
-            productPriceElement.textContent = `$${productSubtotal.toFixed(2)}`;
-            totalCost.textContent = `$${orderTotal.toFixed(2)}`;
+            const symbol = getCurrentSymbol();
+
+            productPriceElement.textContent = formatPrice(productSubtotal, symbol);
+            totalCost.textContent = formatPrice(orderTotal, symbol);
+            shippingCost.textContent = formatPrice(shippingPrice, symbol);
             currentTotal = orderTotal;
-            submitButton.textContent = `Pay $${orderTotal.toFixed(2)}`;
+            submitButton.textContent = `Pay ${formatPrice(orderTotal, symbol)}`;
         }
 
         function syncQuantityAndTotals(value) {
             const safeValue = sanitizeQuantity(value);
             quantityInput.value = safeValue;
             updateOrderSummary(safeValue);
+        }
+
+        function updateTokenDisplay() {
+            const tokenSelect = document.getElementById('tokenSelect');
+            if (!tokenSelect) return;
+
+            const selectedOption = tokenSelect.options[tokenSelect.selectedIndex];
+            const tokenId = selectedOption.value;
+
+            const tokenInput = document.getElementById('tokenInput');
+            if (tokenInput) {
+                tokenInput.value = tokenId;
+            }
+
+            const selectedToken = tokens.find(t => t.id === tokenId);
+            if (selectedToken) {
+                unitPrice = selectedToken.price || unitPrice;
+                shippingPrice = selectedToken.shipping !== undefined ? selectedToken.shipping : shippingPrice;
+                const quantity = sanitizeQuantity(quantityInput.value);
+                updateOrderSummary(quantity);
+            }
         }
 
         quantityDecrease.addEventListener('click', () => {
@@ -624,6 +753,14 @@
                 document.querySelector('.container').style.opacity = '1';
                 document.querySelector('.container').style.transform = 'translateY(0)';
             }, 100);
+
+            updateTokenDisplay();
+        });
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                updateTokenDisplay();
+            }
         });
     </script>
 </body>
