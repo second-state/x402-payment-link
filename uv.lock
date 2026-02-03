@@ -1774,7 +1774,7 @@ wheels = [
 [[package]]
 name = "x402"
 version = "0.2.1"
-source = { git = "https://github.com/coinbase/x402.git?subdirectory=python%2Fx402#95b01e1463ee717cda3a80c3883864d4728e8408" }
+source = { git = "https://github.com/coinbase/x402.git?subdirectory=python%2Fx402&rev=95b01e1463ee717cda3a80c3883864d4728e8408#95b01e1463ee717cda3a80c3883864d4728e8408" }
 dependencies = [
     { name = "eth-account" },
     { name = "eth-typing" },
@@ -1815,7 +1815,7 @@ requires-dist = [
 [[package]]
 name = "x402-payment-service"
 version = "0.1.0"
-source = { git = "https://github.com/second-state/x402-payment-service.git#1a9097339000085be0aefda1c187a6acf6b92ddb" }
+source = { git = "https://github.com/second-state/x402-payment-service.git#2be18dd399763802f5d2b771562dff327dd03354" }
 dependencies = [
     { name = "x402" },
 ]
