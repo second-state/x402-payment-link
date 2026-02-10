@@ -186,9 +186,23 @@ async def product_order_id(product, order_id):
         return payment_service.response(verify_error)
 
     # Settle payment
+
+    # Patch httpx timeout - the x402 library doesn't set a timeout for settle(),
+    # but blockchain transactions can take longer than the default 5 seconds
+    import httpx
+    original_init = httpx.AsyncClient.__init__
+
+    def patched_init(self: httpx.AsyncClient, *args: object, **kwargs: object) -> None:
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = 60.0  # 60 seconds for blockchain transactions
+        original_init(self, *args, **kwargs)
+    httpx.AsyncClient.__init__ = patched_init  # type: ignore[method-assign]
+
     success, tx_hash, tx_network, settle_error = await payment_service.settle(
         payment, selected_requirements, order_id
     )
+    httpx.AsyncClient.__init__ = original_init
+
     if not success:
         app.logger.error(
             f"Payment settlement error ({order_id}): {settle_error}")
