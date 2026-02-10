@@ -1,0 +1,42 @@
+tokens:
+  usdc:
+    symbol: USDC
+    name: USD Coin
+    decimals: 6
+    # No address - payment handled by x402 SDK
+
+  native:
+    symbol: ETH
+    name: Ethereum
+    decimals: 18
+    native: true
+
+  x402t:
+    symbol: X402T
+    name: X402 Test Token
+    decimals: 18
+    version: "1"
+    addresses:
+      base-sepolia: "0x43a9E8BDcF0E97bDfC232B29E2A2838e503C8C0B"
+
+  x402other:
+    symbol: X402T2
+    name: X402 Other Token
+    decimals: 18
+    version: "1"
+    addresses:
+      base-sepolia: "0x8a29bA67F3864DEb45c49bE9954268b995edC02c"
+
+environments:
+  staging:
+    enabled_tokens:
+      - usdc
+      - native
+      - x402t
+      - x402other
+  production:
+    enabled_tokens:
+      - usdc
+      - native
+      - x402t
+      - x402other
