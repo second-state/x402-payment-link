@@ -22,6 +22,9 @@ demo:
       native:
         price: 0.00005
         shipping: 0.000001
+      kii:
+        price: 0.1
+        shipping: 0.2
       x402t:
         price: 0.15
         shipping: 0.15
@@ -37,6 +40,9 @@ demo:
       native:
         price: 0.00005
         shipping: 0.000001
+      kii:
+        price: 0.1
+        shipping: 0.2
       x402t:
         price: 0.15
         shipping: 0.15

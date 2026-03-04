@@ -19,6 +19,15 @@ tokens:
     addresses:
       base-sepolia: "0x43a9E8BDcF0E97bDfC232B29E2A2838e503C8C0B"
 
+  kii:
+    symbol: KII
+    name: KII Token
+    decimals: 6
+    version: "1"
+    erc3009: true
+    addresses:
+      base: "0x0c59d37a843d2632ae93ba2eb4253e426cac038c"
+
   x402other:
     symbol: X402T2
     name: X402 Other Token
@@ -32,11 +41,13 @@ environments:
     enabled_tokens:
       - usdc
       - native
+      - kii
       - x402t
       - x402other
   production:
     enabled_tokens:
       - usdc
       - native
+      - kii
       - x402t
       - x402other

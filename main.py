@@ -168,7 +168,8 @@ async def product_order_id(product, order_id):
         facilitator_url=FACILITATOR_URL,
         max_timeout_seconds=MAX_DEADLINE_SECONDS,
         token_config=token_config,
-        native_token=is_native_token
+        native_token=is_native_token,
+        eip3009_token=token_id if selected_token and selected_token.get("erc3009") else "usdc",
     )
 
     # Parse and validate payment header

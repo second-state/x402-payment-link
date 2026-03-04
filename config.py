@@ -108,6 +108,7 @@ def get_available_tokens(network: str, environment: str) -> list[dict]:
             "version": token_data.get("version", "1"),
             "is_default": token_id == "usdc",
             "native": is_native,
+            "erc3009": token_data.get("erc3009", False),
         }
         tokens.append(token)
 
@@ -153,7 +154,7 @@ def get_token_config_for_payment(token: dict) -> Optional[dict]:
             "name": token.get("name", token.get("symbol", "Native Token")),
         }
 
-    if not token.get("address"):
+    if not token.get("address") or token.get("erc3009", False):
         return None
 
     return {
